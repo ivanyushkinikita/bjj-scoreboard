@@ -41,3 +41,13 @@
 @media(prefers-reduced-motion:reduce){.winner-celebration,.winner-content,.winner-rays{animation:none}}
 
 .setup-rule-summary{margin:0 0 18px;font-size:15px;color:#bad4fa}.setup-rule-summary small{display:block;margin-top:3px}dialog:has(.rules-picker){width:760px;max-width:95vw}dialog .sport-options{gap:8px}dialog .sport-options label{font-size:12px;padding:9px}dialog .category-options{gap:15px}
+
+/* Keep the submission action beside the clock without shifting its centre. */
+.timer-block{position:relative}
+.timer-submission{position:absolute;left:calc(50% + 170px);top:50%;transform:translateY(-50%);width:clamp(180px,20vw,260px);min-height:76px;padding:16px 20px;background:#ffbc70;border:2px solid #ffd39d;color:#321b08;font-size:23px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;box-shadow:0 4px 18px #ffae4520}
+.timer-submission:hover:not(:disabled){background:#ffd39d}
+.timer-submission:active:not(:disabled){transform:translateY(calc(-50% + 1px))}
+/* Reserve the stat/control rows, and fit numerals inside the remaining space. */
+.competitor>:not(.score){flex-shrink:0}
+.competitor .score{container-type:size;overflow:hidden;margin:8px 0 12px;letter-spacing:0;min-width:0;min-height:0}
+.competitor .score>span{display:block;flex-shrink:0;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
