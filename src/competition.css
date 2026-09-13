@@ -53,3 +53,12 @@
 .competitor .score>span{display:block;flex-shrink:0;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
 
 .duration-input{display:flex;gap:8px;align-items:stretch;margin-top:7px}.centered-setup .duration-input input{margin-top:0;min-width:0;flex:1}.duration-arrows{display:flex;flex-direction:column;gap:4px}.duration-arrows button{min-height:26px;flex:1;padding:2px 12px;background:#294775;border-color:#7898c9;font-size:12px}.saved-rules{margin:14px 0;padding:12px;border:1px solid #435470;border-radius:8px}.saved-rules small{display:block;margin-top:6px}
+
+/* Keep the action label centred independently of its arrow. */
+.centered-setup .setup-start{position:relative;justify-content:center;min-height:64px;padding:16px 48px}
+.setup-start-label{text-align:center}.setup-start-arrow{position:absolute;right:20px}
+.winner-options .winner-option{border-width:2px;position:relative;padding:16px 38px 16px 16px}
+.winner-options .winner-option:hover{background-image:linear-gradient(#ffffff18,#ffffff18)}
+.winner-options .winner-option.red:hover{background-color:#b72a3d}.winner-options .winner-option.blue:hover{background-color:#145ac3}.winner-options .winner-option.white:hover{background-color:#e9edf3}
+.winner-options .winner-option[aria-pressed="true"]{outline:3px solid #ffd391;outline-offset:3px}
+.winner-options .winner-option[aria-pressed="true"]::after{content:"✓";position:absolute;right:14px;top:14px;font-size:22px}

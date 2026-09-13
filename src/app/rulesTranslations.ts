@@ -1,4 +1,5 @@
 export const competitionRu:Record<string,string>={
+ 'Increase duration by 1 second':'Увеличить длительность на 1 секунду','Decrease duration by 1 second':'Уменьшить длительность на 1 секунду',
  'Increase duration by 1 minute':'Увеличить длительность на 1 минуту','Decrease duration by 1 minute':'Уменьшить длительность на 1 минуту','My saved rules':'Мои сохранённые правила','Saved on this computer and available for future matches.':'Сохранены на этом компьютере и доступны для следующих схваток.',
  'Change rules in Settings':'Правила можно изменить в настройках', 'Rules are locked after the match starts. Start a new match to change them.':'После начала схватки правила фиксируются. Для изменения создайте новую схватку.',
  'BY DISQUALIFICATION':'ДИСКВАЛИФИКАЦИЯ СОПЕРНИКА','BY TECHNICAL':'ТЕХНИЧЕСКОЕ ПРЕВОСХОДСТВО','Victory by disqualification':'Победа дисквалификацией соперника','Victory by technical':'Победа техническим превосходством',
