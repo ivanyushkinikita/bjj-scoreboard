@@ -62,3 +62,7 @@
 .winner-options .winner-option.red:hover{background-color:#b72a3d}.winner-options .winner-option.blue:hover{background-color:#145ac3}.winner-options .winner-option.white:hover{background-color:#e9edf3}
 .winner-options .winner-option[aria-pressed="true"]{outline:3px solid #ffd391;outline-offset:3px}
 .winner-options .winner-option[aria-pressed="true"]::after{content:"✓";position:absolute;right:14px;top:14px;font-size:22px}
+
+.regulation-clock{position:absolute;left:0;top:12px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 12px;border:1px solid #44536b;border-radius:8px;background:#172131;max-width:calc(50% - 145px)}
+.regulation-clock>span{font-size:11px;color:#b5c4da}.regulation-clock strong{font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}.regulation-clock small{font-size:10px}.overtime-label{color:#ffce8a}
+.display .regulation-clock{top:1vh;padding:1vh 1vw}.display .regulation-clock>span{font-size:clamp(11px,1.2vw,22px)}.display .regulation-clock strong{font-size:clamp(26px,4vh,60px)}.display .regulation-clock small{font-size:clamp(10px,1vw,18px)}

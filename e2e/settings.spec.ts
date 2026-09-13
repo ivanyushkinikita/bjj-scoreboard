@@ -14,6 +14,7 @@ test('Russian locale, synchronized language, sound toggles, Space and Backspace 
   await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');
   await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');
   await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
+  await page.getByLabel('A: плюс 2',{exact:true}).click();
   const popup = context.waitForEvent('page');
   await page.getByRole('button',{name:'Открыть зрительское табло'}).click();
   const display=await popup;

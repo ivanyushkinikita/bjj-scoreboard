@@ -9,6 +9,7 @@ export type ScoreAction = { id: string; side: Side; field: ScoreField; before: n
 export type MatchState = {
   competitorA: Competitor; competitorB: Competitor;
   rules: Rules; showWinner: boolean; overtimeAttacker: Side | null;
+  overtime: { duration: number; regulationRemaining: number } | null;
   initialDuration: number; remainingTime: number; endTimestamp: number | null;
   status: MatchStatus; winner: Side | null; result: FinishReason | null;
   confirmed: boolean; events: MatchEvent[]; past: ScoreAction[]; future: ScoreAction[];

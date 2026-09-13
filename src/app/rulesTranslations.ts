@@ -1,4 +1,7 @@
 export const competitionRu:Record<string,string>={
+ 'Regulation time':'Основное время','Duration':'Длительность','Extra time':'Дополнительное время','Configure extra time':'Настроить дополнительное время','Extra time duration':'Длительность дополнительного времени','Set extra time':'Установить дополнительное время',
+ 'Extra time setup instructions':'Основное время завершено при равном счёте. Задайте дополнительное время: оно заменит центральный таймер, а основное останется в углу. Запустите отсчёт кнопкой или пробелом.',
+ 'Configured overtime instructions':'В режиме UWW выберите атакующего. Технические баллы в овертайме отключены; после истечения заданного времени выигрывает защищающийся. Победу подтверждает судья.',
  'Increase duration by 1 second':'Увеличить длительность на 1 секунду','Decrease duration by 1 second':'Уменьшить длительность на 1 секунду',
  'Increase duration by 1 minute':'Увеличить длительность на 1 минуту','Decrease duration by 1 minute':'Уменьшить длительность на 1 минуту','My saved rules':'Мои сохранённые правила','Saved on this computer and available for future matches.':'Сохранены на этом компьютере и доступны для следующих схваток.',
  'Change rules in Settings':'Правила можно изменить в настройках', 'Rules are locked after the match starts. Start a new match to change them.':'После начала схватки правила фиксируются. Для изменения создайте новую схватку.',
@@ -20,6 +23,8 @@ export const competitionRu:Record<string,string>={
  'UWW overtime summary':'Овертайм — 1 минута, только сабмишн; технические баллы отключены. Предупреждения суммируются с основным временем без начисления баллов. При истечении времени побеждает защищающийся.',
 };
 export const competitionEn:Record<string,string>={
+ 'Extra time setup instructions':'Regulation ended with equal points. Set extra time to replace the central clock; regulation stays in the corner. Start the countdown using the timer button or Space.',
+ 'Configured overtime instructions':'In UWW mode, select the attacker. Technical points are disabled during overtime; the defender wins when the configured time expires. The referee confirms the winner.',
  'Custom rules summary':'Define actions worth 1–99 points, up to 30 actions. Highest score wins; tied scores need a referee decision. Penalties do not award points. Rules are saved locally.',
  'IBJJF summary':'Compare points, advantages, then fewer penalties; otherwise the referee decides. Age uses birth year. Duration follows age and belt, with a manual override.',
  'IBJJF age restrictions':'Illegal-move groups: ages 4–12, 13–15, 16–17, and adults by belt. Jumping closed guard is prohibited through age 15 and for white belts. Gi and No-Gi restrictions differ; Adult brown/black No-Gi has a separate column (pages 29–33).',

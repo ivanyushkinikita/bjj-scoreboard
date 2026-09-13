@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import type { MatchState, MatchEvent, ScoreField, Side, FinishReason } from '../types/match';
 import { changeScore } from '../domain/scoring';
-import { defaultRules, matchWinner, penaltyAward, ruleMinutes, type Rules, type AthleteColor } from '../domain/rules';
+import { defaultRules, disqualificationLimit, matchWinner, penaltyAward, ruleMinutes, type Rules, type AthleteColor } from '../domain/rules';
 import { remainingTime } from '../domain/timer';
 
 export const blankMatch = (): MatchState => ({
   competitorA: { name: '', points: 0, advantages: 0, penalties: 0, color:'blue' },
   competitorB: { name: '', points: 0, advantages: 0, penalties: 0, color:'white' },
-  rules: defaultRules(), showWinner: false, overtimeAttacker:null,
+  rules: defaultRules(), showWinner: false, overtimeAttacker:null, overtime:null,
   initialDuration: 300000, remainingTime: 300000, endTimestamp: null,
   status: 'setup', winner: null, result: null, confirmed: false, events: [], past: [], future: [],
 });
@@ -16,23 +16,35 @@ function event(s: MatchState, type: string, competitor: Side | null = null, valu
 }
 const key = (side: Side) => side === 'A' ? 'competitorA' : 'competitorB';
 export const canConfigureRules = (s:MatchState) => s.status==='setup'||(s.status==='ready'&&!s.events.some(e=>e.type==='Timer started')&&!s.past.length);
+export const canStartOvertime = (s:MatchState) => s.status==='finished' && s.result==='time' && !s.confirmed && !s.overtime && !s.overtimeAttacker && s.competitorA.points===s.competitorB.points && [s.competitorA,s.competitorB].every(c=>c.penalties<disqualificationLimit(s.rules));
+export const clockDuration = (s:MatchState) => s.overtime?.duration ?? s.initialDuration;
 const canScore = (s: MatchState) => s.status !== 'setup' && !s.confirmed;
 function provisional(s: MatchState): MatchState {
   return s.status === 'finished' && !s.confirmed ? { ...s, winner: matchWinner(s) } : s;
 }
 type Store = { match: MatchState; setup: (a: string, b: string, duration: number, rules?:Rules, colors?:[AthleteColor,AthleteColor]) => void; replace: (s: MatchState) => void; reset: () => void;
   configureRules:(rules:Rules)=>void;
-  setColor:(side:Side,color:AthleteColor)=>void; presentWinner:(show:boolean)=>void; startOvertime:(attacker:Side)=>void;
+  setColor:(side:Side,color:AthleteColor)=>void; presentWinner:(show:boolean)=>void; startOvertime:(attacker:Side|null,duration?:number)=>void;
   score: (side: Side, field: ScoreField, delta: number, label?: string) => void;
   undo: () => void; redo: () => void; toggleTimer: () => void; tick: () => void; setTime: (ms: number) => void; resetTimer: () => void;
   rename: (side: Side, name: string) => void; finish: (side: Side, reason: FinishReason) => void;
 };
 export const useMatchStore = create<Store>((set, get) => ({
-  match: blankMatch(), replace: (match) => set({ match:{...blankMatch(),...match,competitorA:{color:'blue',...match.competitorA},competitorB:{color:'white',...match.competitorB}} }), reset: () => set({ match: blankMatch() }),
+  match: blankMatch(), replace: (match) => {
+    const normalized={...blankMatch(),...match,competitorA:{color:'blue' as const,...match.competitorA},competitorB:{color:'white' as const,...match.competitorB}};
+    if(!normalized.overtime && normalized.overtimeAttacker){
+      normalized.overtime={duration:match.initialDuration,regulationRemaining:0};
+      normalized.initialDuration=match.events.find(e=>e.type==='Match created')?.matchTime || 300000;
+    }
+    set({match:normalized});
+  }, reset: () => set({ match: blankMatch() }),
   configureRules:(rules)=>set(({match:s})=>!canConfigureRules(s)?{}:{match:{...s,rules:structuredClone(rules),initialDuration:ruleMinutes(rules)*60000,remainingTime:ruleMinutes(rules)*60000}}),
   setColor:(side,color)=>set(({match:s})=>s[key(side==='A'?'B':'A')].color===color?{}:{match:{...s,[key(side)]:{...s[key(side)],color}}}),
   presentWinner:(show)=>set(({match:s})=>({match:{...s,showWinner:show&&s.confirmed}})),
-  startOvertime:(attacker)=>set(({match:s})=>s.rules.sport!=='grappling'||s.status!=='finished'||s.confirmed||s.winner||s.overtimeAttacker?{}:{match:{...s,overtimeAttacker:attacker,status:'ready',remainingTime:60000,initialDuration:60000,endTimestamp:null,result:null,events:[...s.events,event(s,'Overtime',attacker)]}}),
+  startOvertime:(attacker,duration=60000)=>set(({match:s})=>{
+    if(!canStartOvertime(s)||!Number.isInteger(duration)||duration<1000||duration>59999000||(s.rules.sport==='grappling'&&attacker!=='A'&&attacker!=='B'))return {};
+    return {match:{...s,overtime:{duration,regulationRemaining:remainingTime(s)},overtimeAttacker:s.rules.sport==='grappling'?attacker:null,status:'ready',remainingTime:duration,endTimestamp:null,winner:null,result:null,events:[...s.events,event(s,'Overtime',attacker,duration)]}};
+  }),
   setup: (a, b, duration, rules=defaultRules(), colors=['blue','white']) => {
     if (!a.trim() || !b.trim() || !Number.isFinite(duration) || duration <= 0) return;
     const match = blankMatch();
@@ -87,7 +99,7 @@ export const useMatchStore = create<Store>((set, get) => ({
   }),
   resetTimer: () => {
     const s = get().match; if (s.confirmed || s.status === 'setup') return;
-    set({ match: { ...s, remainingTime: s.initialDuration, endTimestamp: null, status: 'ready', winner: null, result: null, events: [...s.events, event(s, 'Timer reset', null, s.initialDuration - remainingTime(s))] } });
+    set({ match: { ...s, remainingTime: clockDuration(s), endTimestamp: null, status: 'ready', winner: null, result: null, events: [...s.events, event(s, 'Timer reset', null, clockDuration(s) - remainingTime(s))] } });
   },
   rename: (side, name) => set(({ match: s }) => name.trim() ? { match: { ...s, [key(side)]: { ...s[key(side)], name: name.trim() }, events: [...s.events, event(s, `Name changed to ${name.trim()}`, side)] } } : {}),
   finish: (side, reason) => set(({ match: s }) => s.status === 'setup' || s.confirmed ? {} : { match: { ...s, remainingTime: remainingTime(s), endTimestamp: null, status: 'finished', winner: side, result: reason, confirmed: true, showWinner:true, events: [...s.events, event(s, `Victory by ${reason}`, side)] } }),

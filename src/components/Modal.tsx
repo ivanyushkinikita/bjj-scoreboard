@@ -5,5 +5,5 @@ export function Modal({ title, children, close }: { title: string; children: Rea
   const { t } = useTranslation();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const d = ref.current!; d.showModal(); return () => d.close(); }, []);
-  return createPortal(<dialog ref={ref} onSubmit={e=>e.stopPropagation()} onCancel={e => { e.preventDefault(); close?.(); }}><div className="modal-head"><h2>{t(title)}</h2>{close && <button type="button" aria-label={t("Close dialog")} onClick={close}>×</button>}</div>{children}</dialog>,document.body);
+  return createPortal(<dialog aria-label={t(title)} ref={ref} onSubmit={e=>e.stopPropagation()} onCancel={e => { e.preventDefault(); close?.(); }}><div className="modal-head"><h2>{t(title)}</h2>{close && <button type="button" aria-label={t("Close dialog")} onClick={close}>×</button>}</div>{children}</dialog>,document.body);
 }

@@ -13,5 +13,6 @@ export function loadMatch(): MatchState | null {
   }
   if(s.rules && (!['bjj','grappling','custom'].includes(s.rules.sport)||typeof s.rules.category!=='string'||typeof s.rules.belt!=='string'||!Array.isArray(s.rules.actions)||!s.rules.actions.length||s.rules.actions.some(a=>typeof a.label!=='string'||!a.label.trim()||!Number.isInteger(a.points)||a.points<1||a.points>99))) throw new Error('Saved rules are invalid');
   if (![s.initialDuration, s.remainingTime].every(n => Number.isFinite(n) && n >= 0) || (s.status === 'running' && !Number.isFinite(s.endTimestamp))) throw new Error('Saved timer is invalid');
+  if(s.overtime!=null && (!Number.isInteger(s.overtime.duration)||s.overtime.duration<1000||s.overtime.duration>59999000||!Number.isFinite(s.overtime.regulationRemaining)||s.overtime.regulationRemaining<0)) throw new Error('Saved overtime is invalid');
   return s.status === 'setup' ? null : s;
 }
