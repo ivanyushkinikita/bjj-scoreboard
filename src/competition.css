@@ -51,3 +51,5 @@
 .competitor>:not(.score){flex-shrink:0}
 .competitor .score{container-type:size;overflow:hidden;margin:8px 0 12px;letter-spacing:0;min-width:0;min-height:0}
 .competitor .score>span{display:block;flex-shrink:0;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
+
+.duration-input{display:flex;gap:8px;align-items:stretch;margin-top:7px}.centered-setup .duration-input input{margin-top:0;min-width:0;flex:1}.duration-arrows{display:flex;flex-direction:column;gap:4px}.duration-arrows button{min-height:26px;flex:1;padding:2px 12px;background:#294775;border-color:#7898c9;font-size:12px}.saved-rules{margin:14px 0;padding:12px;border:1px solid #435470;border-radius:8px}.saved-rules small{display:block;margin-top:6px}

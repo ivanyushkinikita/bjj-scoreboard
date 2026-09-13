@@ -1,6 +1,7 @@
 import type { MatchState } from '../types/match';
+import { saveMatchDefaults } from './matchDefaults';
 const KEY = 'tatami.match.v1';
-export function saveMatch(match: MatchState) { localStorage.setItem(KEY, JSON.stringify({ version: 1, match })); }
+export function saveMatch(match: MatchState) { saveMatchDefaults(match); localStorage.setItem(KEY, JSON.stringify({ version: 1, match })); }
 export function loadMatch(): MatchState | null {
   const raw = localStorage.getItem(KEY); if (!raw) return null;
   const data = JSON.parse(raw);

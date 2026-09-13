@@ -1,4 +1,5 @@
 export const competitionRu:Record<string,string>={
+ 'Increase duration by 1 minute':'Увеличить длительность на 1 минуту','Decrease duration by 1 minute':'Уменьшить длительность на 1 минуту','My saved rules':'Мои сохранённые правила','Saved on this computer and available for future matches.':'Сохранены на этом компьютере и доступны для следующих схваток.',
  'Change rules in Settings':'Правила можно изменить в настройках', 'Rules are locked after the match starts. Start a new match to change them.':'После начала схватки правила фиксируются. Для изменения создайте новую схватку.',
  'BY DISQUALIFICATION':'ДИСКВАЛИФИКАЦИЯ СОПЕРНИКА','BY TECHNICAL':'ТЕХНИЧЕСКОЕ ПРЕВОСХОДСТВО','Victory by disqualification':'Победа дисквалификацией соперника','Victory by technical':'Победа техническим превосходством',
  'RED':'КРАСНЫЙ','Sport':'Вид борьбы','BJJ · IBJJF':'БЖЖ · IBJJF','Grappling · UWW':'Греплинг · UWW','Add custom rules':'Добавить свои правила','Rules guide':'Правила','Age category':'Возрастная категория','Belt':'Пояс','Athlete color':'Цвет спортсмена','Preset duration':'Время по правилам','Manual time':'Задано вручную',
