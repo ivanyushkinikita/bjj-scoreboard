@@ -49,7 +49,7 @@
 .timer-submission:active:not(:disabled){transform:translateY(calc(-50% + 1px))}
 /* Reserve the stat/control rows, and fit numerals inside the remaining space. */
 .competitor>:not(.score){flex-shrink:0}
-.competitor .score{container-type:size;overflow:hidden;margin:8px 0 12px;letter-spacing:0;min-width:0;min-height:0}
+.competitor .score{container-type:size;overflow:clip;margin:8px 0 12px;letter-spacing:0;min-width:0;min-height:0}
 .competitor .score>span{display:block;flex-shrink:0;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
 
 .duration-input{display:flex;gap:8px;align-items:stretch;margin-top:7px}.centered-setup .duration-input input{margin-top:0;min-width:0;flex:1}.duration-arrows{display:flex;flex-direction:column;gap:4px}.duration-arrows button{min-height:26px;flex:1;padding:2px 12px;background:#294775;border-color:#7898c9;font-size:12px}.saved-rules{margin:14px 0;padding:12px;border:1px solid #435470;border-radius:8px}.saved-rules small{display:block;margin-top:6px}
@@ -63,6 +63,7 @@
 .winner-options .winner-option[aria-pressed="true"]{outline:3px solid #ffd391;outline-offset:3px}
 .winner-options .winner-option[aria-pressed="true"]::after{content:"✓";position:absolute;right:14px;top:14px;font-size:22px}
 
-.regulation-clock{position:absolute;left:0;top:12px;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:8px 12px;border:1px solid #44536b;border-radius:8px;background:#172131;max-width:calc(50% - 145px)}
-.regulation-clock>span{font-size:11px;color:#b5c4da}.regulation-clock strong{font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}.regulation-clock small{font-size:10px}.overtime-label{color:#ffce8a}
-.display .regulation-clock{top:1vh;padding:1vh 1vw}.display .regulation-clock>span{font-size:clamp(11px,1.2vw,22px)}.display .regulation-clock strong{font-size:clamp(26px,4vh,60px)}.display .regulation-clock small{font-size:clamp(10px,1vw,18px)}
+.overtime-label{color:#ffce8a}
+
+/* The app shell never scrolls; setup, history and dialogs own their scrolling. */
+html,body,#root{overflow:hidden}
