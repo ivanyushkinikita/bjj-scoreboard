@@ -1,0 +1,43 @@
+.centered-setup{display:flex;justify-content:center;max-width:none;overflow:auto;min-height:0;align-items:safe center;padding:20px 0}
+.centered-setup .setup-card{width:min(1040px,100%);padding:26px 38px;flex-shrink:0}
+.centered-setup .setup-card h2{font-size:32px;margin:7px 0 18px}
+.centered-setup label{font-size:15px;margin:10px 0}
+.sport-options{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sport-options label{display:flex;gap:10px;align-items:center;border:1px solid #435470;border-radius:8px;padding:10px 14px;margin:0;font-size:14px;background:#1a273a;color:#eef4ff;cursor:pointer}
+.sport-options label:has(:checked){border-color:#96bfff;background:#294775}
+.sport-options input{width:20px;height:20px;min-height:20px;margin:0;accent-color:#a7c8ff;padding:0}
+.sport-options button{margin-left:auto;font-size:12px}
+.category-options{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.category-options select{margin-top:5px;min-height:42px;padding:9px 12px;background:#202e46;border-color:#526b96}
+.athlete-fields{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:8px 0}
+.athlete-field{padding:12px 18px;border:1px solid var(--athlete);border-radius:12px;background:color-mix(in srgb,var(--athlete) 12%,#111a27)}
+.color-blue{--athlete:#66aaff}.color-red{--athlete:#ff757e}.color-white{--athlete:#e5eaf5}
+.centered-setup .athlete-field input{font-size:25px;min-height:60px;border:2px solid var(--athlete);background:color-mix(in srgb,var(--athlete) 13%,#0b121c);padding:12px 14px}
+.color-select{display:flex;gap:16px;align-items:center}.color-select select{margin:0;flex:1;max-width:190px;min-height:40px;padding:8px 12px}
+.duration-row{display:grid;grid-template-columns:190px 1fr;gap:26px;align-items:center}
+.centered-setup .time-input{font-size:27px;min-height:54px;background:#202e46;border-color:#7898c9}
+.duration-row .presets{margin-top:10px;gap:8px}.duration-row .presets button{min-height:43px;font-size:14px}
+.centered-setup .setup-start{margin:14px 0 6px;font-size:16px;min-height:52px}
+.rules-picker.compact{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;flex-shrink:0}
+.compact .sport-options label{font-size:11px;padding:6px 10px}.compact .sport-options button{min-height:34px;padding:5px 10px}.compact .sport-options input{height:16px;width:16px;min-height:16px}.compact small{white-space:nowrap}
+.red{background:#b72a3d;border-color:#e46271;color:#fff}
+.competitors{gap:24px}.competitor{border-width:2px}
+.stats{gap:16px;padding-bottom:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{flex-direction:column;justify-content:center;gap:6px;padding:9px 12px;border:1px solid #ffffff45;background:#00000018;border-radius:9px}
+.stat>span{font-size:10px!important;letter-spacing:1px}.stat>div{display:grid;grid-template-columns:44px minmax(34px,1fr) 44px;gap:15px;width:100%}.stat strong{font-size:32px;background:#00000015;border-radius:5px;min-width:40px;line-height:44px}.white .stat{border-color:#a9b8cc;background:#fff8}.white .stat strong{background:#dee6f0}
+.score{letter-spacing:-3px;font-size:clamp(60px,13vh,180px)}
+.point-buttons{gap:14px;overflow-x:auto}.point-buttons button{min-width:70px;gap:12px;min-height:48px}.point-buttons kbd:empty{display:none}
+.timer-block{height:145px;padding-top:5px}.timer{font-size:76px}
+.rules-alert{flex-shrink:0;background:#573a16;color:#ffe3a9;padding:6px 12px;display:flex;justify-content:center;align-items:center;gap:20px;font-size:12px;border-radius:6px}.rules-alert button{min-height:30px;padding:3px 10px}
+.action-editor{display:grid;grid-template-columns:1fr 110px;gap:12px}.action-editor button{grid-column:1/-1}.action-editor label{margin:0}.action-editor input{border-color:#7a9ccf;background:#243651}.custom-actions{margin-top:18px;max-height:30vh;overflow:auto}.custom-actions>div{display:flex;align-items:center;gap:20px;border-bottom:1px solid #39495e;padding:8px 0}.custom-actions span{flex:1;overflow-wrap:anywhere}.custom-actions button{font-size:22px;min-height:36px;padding:0 12px}
+.rules-guide a{display:block;color:#a7c8ff;line-height:2}.rules-guide small{display:block;margin-top:15px}.rules-guide p{font-size:14px}
+.winner-celebration{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden;border:0;text-align:center;animation:winner-reveal .7s ease-out both}
+.winner-content{position:relative;z-index:1;width:96%;max-height:96vh;overflow:auto;padding:20px;animation:winner-name 1s cubic-bezier(.2,.8,.2,1) both}.winner-content h1{text-transform:uppercase;line-height:1.03;overflow-wrap:anywhere;margin:16px auto 28px;letter-spacing:-.035em;text-shadow:0 7px 35px #0003;font-weight:850}.winner-content p{color:inherit;font-size:clamp(24px,3vw,48px);letter-spacing:.22em;margin:10px 0}.winner-content>span{font-size:20px;letter-spacing:.15em}.winner-content .winner-crown{font-size:72px;color:#ffe1a1;display:block;text-shadow:0 0 45px #ffd57990}.white .winner-crown{color:#95620d;text-shadow:none}.winner-content button{display:block;margin:38px auto 0;color:#fff;background:#101a2ddd;border-color:#ffffff80}
+.winner-rays{position:absolute;width:180vmax;height:180vmax;background:repeating-conic-gradient(from 0deg,#ffffff0e 0deg 12deg,transparent 12deg 30deg);animation:winner-spin 60s linear infinite;pointer-events:none}.winner-replay{position:fixed;right:32px;bottom:5px;z-index:2;font-size:10px;min-height:24px;padding:3px 10px}
+@keyframes winner-reveal{from{opacity:0}to{opacity:1}}@keyframes winner-name{from{opacity:0;transform:translateY(40px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes winner-spin{to{transform:rotate(360deg)}}
+.display .stat>div{display:block}.display .stat{padding:1.5vh}.display .stats{gap:2vw}.display .stat>span{font-size:1.2vw!important}.display .stat strong{display:block;background:transparent;font-size:5vh;line-height:1.3}.display .score{font-size:20vh}
+@media(max-height:740px){.centered-setup .setup-card{padding:16px 30px}.centered-setup .setup-card h2{font-size:27px;margin:4px 0 10px}.centered-setup .athlete-field input{min-height:50px;font-size:22px}.athlete-field{padding:6px 14px}.centered-setup label{margin:6px 0}.timer-block{height:125px}.timer{font-size:66px}.stat{padding:6px}.stat>div{gap:8px}.stat strong{font-size:27px}.competitor h2{font-size:23px}.score{font-size:11vh}.match-controls button{min-height:42px}.point-buttons button{min-height:44px}}
+@media(min-height:950px){.centered-setup .setup-card{padding:40px 48px}.centered-setup .setup-card h2{font-size:40px}.centered-setup label{margin:16px 0}.athlete-field{padding:18px 22px}.timer-block{height:190px}.timer{font-size:108px}.score{font-size:18vh}.stat{padding:15px}.point-buttons button{min-height:65px}}
+@media(prefers-reduced-motion:reduce){.winner-celebration,.winner-content,.winner-rays{animation:none}}
+
+.setup-rule-summary{margin:0 0 18px;font-size:15px;color:#bad4fa}.setup-rule-summary small{display:block;margin-top:3px}dialog:has(.rules-picker){width:760px;max-width:95vw}dialog .sport-options{gap:8px}dialog .sport-options label{font-size:12px;padding:9px}dialog .category-options{gap:15px}

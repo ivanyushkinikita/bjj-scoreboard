@@ -1,0 +1,15 @@
+[package]
+name = "tatami-scoreboard"
+version = "1.0.0"
+description = "Offline BJJ competition scoreboard"
+edition = "2021"
+
+[lib]
+name = "tatami_scoreboard_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }

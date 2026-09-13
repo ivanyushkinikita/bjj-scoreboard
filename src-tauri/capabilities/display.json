@@ -1,0 +1,1 @@
+{ "identifier": "display", "description": "Receive local scoreboard state and request initial snapshot", "windows": ["display"], "permissions": ["core:event:default"] }
