@@ -3,10 +3,11 @@ import type { MatchState, MatchEvent, ScoreField, Side, FinishReason } from '../
 import { changeScore } from '../domain/scoring';
 import { defaultRules, disqualificationLimit, matchWinner, penaltyAward, ruleMinutes, type Rules, type AthleteColor } from '../domain/rules';
 import { remainingTime } from '../domain/timer';
+import { titleCaseName } from '../domain/names';
 
 export const blankMatch = (): MatchState => ({
-  competitorA: { name: '', points: 0, advantages: 0, penalties: 0, color:'blue' },
-  competitorB: { name: '', points: 0, advantages: 0, penalties: 0, color:'white' },
+  competitorA: { name: '', points: 0, advantages: 0, penalties: 0, color:'red' },
+  competitorB: { name: '', points: 0, advantages: 0, penalties: 0, color:'blue' },
   rules: defaultRules(), showWinner: false, overtimeAttacker:null, overtime:null,
   initialDuration: 300000, remainingTime: 300000, endTimestamp: null,
   status: 'setup', winner: null, result: null, confirmed: false, events: [], past: [], future: [],
@@ -31,7 +32,7 @@ type Store = { match: MatchState; setup: (a: string, b: string, duration: number
 };
 export const useMatchStore = create<Store>((set, get) => ({
   match: blankMatch(), replace: (match) => {
-    const normalized={...blankMatch(),...match,competitorA:{color:'blue' as const,...match.competitorA},competitorB:{color:'white' as const,...match.competitorB}};
+    const normalized={...blankMatch(),...match,competitorA:{color:'red' as const,...match.competitorA},competitorB:{color:'blue' as const,...match.competitorB}};
     if(!normalized.overtime && normalized.overtimeAttacker){
       normalized.overtime={duration:match.initialDuration,regulationRemaining:0};
       normalized.initialDuration=match.events.find(e=>e.type==='Match created')?.matchTime || 300000;
@@ -45,11 +46,11 @@ export const useMatchStore = create<Store>((set, get) => ({
     if(!canStartOvertime(s)||!Number.isInteger(duration)||duration<1000||duration>59999000||(s.rules.sport==='grappling'&&attacker!=='A'&&attacker!=='B'))return {};
     return {match:{...s,overtime:{duration,regulationRemaining:remainingTime(s)},overtimeAttacker:s.rules.sport==='grappling'?attacker:null,status:'ready',remainingTime:duration,endTimestamp:null,winner:null,result:null,events:[...s.events,event(s,'Overtime',attacker,duration)]}};
   }),
-  setup: (a, b, duration, rules=defaultRules(), colors=['blue','white']) => {
+  setup: (a, b, duration, rules=defaultRules(), colors=['red','blue']) => {
     if (!a.trim() || !b.trim() || !Number.isFinite(duration) || duration <= 0) return;
     const match = blankMatch();
     match.rules=structuredClone(rules); match.competitorA.color=colors[0]; match.competitorB.color=colors[1];
-    match.competitorA.name = a.trim(); match.competitorB.name = b.trim();
+    match.competitorA.name = titleCaseName(a.trim()); match.competitorB.name = titleCaseName(b.trim());
     match.initialDuration = duration; match.remainingTime = duration; match.status = 'ready';
     match.events = [event(match, 'Match created')]; set({ match });
   },
@@ -101,6 +102,6 @@ export const useMatchStore = create<Store>((set, get) => ({
     const s = get().match; if (s.confirmed || s.status === 'setup') return;
     set({ match: { ...s, remainingTime: clockDuration(s), endTimestamp: null, status: 'ready', winner: null, result: null, events: [...s.events, event(s, 'Timer reset', null, clockDuration(s) - remainingTime(s))] } });
   },
-  rename: (side, name) => set(({ match: s }) => name.trim() ? { match: { ...s, [key(side)]: { ...s[key(side)], name: name.trim() }, events: [...s.events, event(s, `Name changed to ${name.trim()}`, side)] } } : {}),
+  rename: (side, name) => set(({ match: s }) => name.trim() ? { match: { ...s, [key(side)]: { ...s[key(side)], name: titleCaseName(name.trim()) }, events: [...s.events, event(s, `Name changed to ${name.trim()}`, side)] } } : {}),
   finish: (side, reason) => set(({ match: s }) => s.status === 'setup' || s.confirmed ? {} : { match: { ...s, remainingTime: remainingTime(s), endTimestamp: null, status: 'finished', winner: side, result: reason, confirmed: true, showWinner:true, events: [...s.events, event(s, `Victory by ${reason}`, side)] } }),
 }));

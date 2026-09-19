@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Tatami Scoreboard", "version": "1.0.0", "identifier": "app.tatami.scoreboard",
+  "productName": "Tatami Scoreboard", "version": "1.0.1", "identifier": "app.tatami.scoreboard",
   "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
   "app": { "windows": [{ "label": "main", "title": "Tatami — Match Control", "width": 1366, "height": 768, "minWidth": 1000, "minHeight": 680 }], "security": { "csp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; media-src 'self'; script-src 'self'", "devCsp": "default-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://localhost:1420 http://127.0.0.1:1420 ws://localhost:1420 ws://127.0.0.1:1420; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; media-src 'self'" } },
   "bundle": { "active": true, "targets": ["nsis"], "icon": ["icons/icon.ico"], "windows": { "webviewInstallMode": { "type": "offlineInstaller" } } }

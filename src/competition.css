@@ -49,8 +49,11 @@
 .timer-submission:active:not(:disabled){transform:translateY(calc(-50% + 1px))}
 /* Reserve the stat/control rows, and fit numerals inside the remaining space. */
 .competitor>:not(.score){flex-shrink:0}
-.competitor .score{container-type:size;overflow:clip;margin:8px 0 12px;letter-spacing:0;min-width:0;min-height:0}
-.competitor .score>span{display:block;flex-shrink:0;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
+.competitor .score{container-type:size;overflow:clip;margin:8px 0 12px;letter-spacing:0;min-width:0;min-height:0;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:12px;align-items:center}
+.competitor .score-value{display:block;min-width:0;line-height:1;font-weight:750;font-variant-numeric:tabular-nums;text-align:center}
+.score-adjustment{width:44px;min-width:44px;min-height:44px;padding:0;border-color:#ffffff40;background:#ffffff14;font-size:26px;line-height:1}
+.score-adjustment::before{content:'−'}.score-increment::before{content:'+'}.white .score-adjustment{background:#dce2eb;border-color:#c5ceda}.white .score-adjustment:hover:not(:disabled){background:#b9c8dc}
+.display .score{display:flex}.display .score-value{width:100%}
 
 .duration-input{display:flex;gap:8px;align-items:stretch;margin-top:7px}.centered-setup .duration-input input{margin-top:0;min-width:0;flex:1}.duration-arrows{display:flex;flex-direction:column;gap:4px}.duration-arrows button{min-height:26px;flex:1;padding:2px 12px;background:#294775;border-color:#7898c9;font-size:12px}.saved-rules{margin:14px 0;padding:12px;border:1px solid #435470;border-radius:8px}.saved-rules small{display:block;margin-top:6px}
 
@@ -67,3 +70,4 @@
 
 /* The app shell never scrolls; setup, history and dialogs own their scrolling. */
 html,body,#root{overflow:hidden}
+.author-credit{opacity:.65;text-transform:none;letter-spacing:.8px}.winner-options .winner-option[aria-pressed="true"]{box-shadow:0 0 0 3px #ffd391,0 0 24px #ffd39199;transform:translateY(-1px)}

@@ -52,9 +52,7 @@ if (process.argv[2] === 'release') {
   await page.getByRole('button',{name:'Confirm change'}).click();
   await expect(display.getByText('TIME EXPIRED',{exact:true})).toBeVisible();
   await expect.poll(()=>page.evaluate(()=>window.soundStarts)).toBe(2);
-  await page.getByRole('button',{name:'Submission',exact:true}).click();
-  await page.getByRole('button',{name:'BLUE Petr'}).click();
-  await page.getByRole('button',{name:'Confirm victory'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Confirm victory'}).click();
   await expect(display.getByRole('dialog',{name:'Winner'}).getByRole('heading',{name:'Petr'})).toBeVisible();
   await expect(display.getByRole('dialog',{name:'Winner'})).toHaveClass(/blue/);
   fs.mkdirSync('test-results/native',{recursive:true});
@@ -184,8 +182,7 @@ if (phase === 'first') {
   if (await page.getByRole('button',{name:'RESUME'}).isEnabled().catch(() => false)) await page.getByRole('button',{name:'RESUME'}).click();
   await expect(display.getByText('TIME EXPIRED',{exact:true})).toBeVisible();
   await expect(display.getByText('Petr LEADS')).toBeVisible();
-  await page.getByRole('button',{name:'Confirm result'}).click();
-  await page.getByRole('button',{name:'Confirm victory'}).click();
+  await page.getByRole('dialog').getByRole('button',{name:'Confirm victory'}).click();
   await expect(display.getByRole('dialog',{name:'Winner'}).getByRole('heading',{name:'Petr'})).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
   await display.screenshot({path:'test-results/native/final-result.png'});

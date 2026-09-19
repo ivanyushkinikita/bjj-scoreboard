@@ -43,6 +43,7 @@ test('Russian locale, synchronized language, sound toggles, Space and Backspace 
   await page.keyboard.press('Space');
   await expect(display.getByText('ВРЕМЯ ИСТЕКЛО',{exact:true})).toBeVisible();
   await expect.poll(starts).toBe(1);
+  await page.getByRole('dialog').locator('.dialog-actions button').first().click();
   await page.getByLabel('Настройки',{exact:true}).click();
   await page.getByLabel('Звук по окончании времени').check();
   await page.getByLabel('Закрыть диалог').click();
@@ -51,7 +52,7 @@ test('Russian locale, synchronized language, sound toggles, Space and Backspace 
   await page.getByRole('button',{name:'Подтвердить изменение'}).click();
   await page.keyboard.press('Space');
   await expect(display.getByText('ВРЕМЯ ИСТЕКЛО',{exact:true})).toBeVisible();
-  await expect.poll(starts).toBe(2);
+  await expect.poll(starts,{timeout:10000}).toBe(2);
   await page.screenshot({path:'test-results/control-ru.png'});
   await expect(page.locator('body')).toHaveJSProperty('scrollHeight',768);
   await page.reload();

@@ -1,6 +1,6 @@
 [package]
 name = "tatami-scoreboard"
-version = "1.0.0"
+version = "1.0.1"
 description = "Offline BJJ competition scoreboard"
 edition = "2021"
 

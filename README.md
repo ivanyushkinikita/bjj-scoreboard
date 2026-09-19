@@ -2,7 +2,7 @@
 
 Автономное приложение судьи на Tauri 2, React, TypeScript, Vite и Zustand. Русский интерфейс по умолчанию с переключением на English. Для спортсменов выбираются разные цвета: красный, синий, белый. Без backend, CDN и внешних шрифтов; весь runtime работает локально.
 
-Готовый EXE: `src-tauri/target/release/tatami-scoreboard.exe`. Windows installer со встроенным offline-установщиком WebView2: `src-tauri/target/release/bundle/nsis/Tatami Scoreboard_1.0.0_x64-setup.exe`. Для отдельного EXE требуется установленный WebView2; installer устанавливает его при необходимости.
+Готовый EXE: `src-tauri/target/release/tatami-scoreboard.exe`. Windows installer со встроенным offline-установщиком WebView2: `src-tauri/target/release/bundle/nsis/Tatami Scoreboard_1.0.1_x64-setup.exe`. Для отдельного EXE требуется установленный WebView2; installer устанавливает его при необходимости.
 
 В пункте **Настройки** можно выбрать русский/английский язык и независимо включить звуки старта и окончания. Настройки сохраняются между запусками; язык синхронизируется со зрительским окном. Звук старта звучит при первом запуске и после сброса таймера, продолжение после паузы не сопровождается повторным сигналом. Для проверки звуков есть отдельные кнопки.
 
