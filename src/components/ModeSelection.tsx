@@ -1,4 +1,6 @@
 import { useTranslation } from '../app/i18n';
+import singleMatchIcon from '../assets/single-match-icon.png';
+import tournamentIcon from '../assets/tournament-icon.png';
 
 export function ModeSelection({ onSingleMatch, onTournament }: { onSingleMatch: () => void; onTournament: () => void }) {
   const { t } = useTranslation();
@@ -10,14 +12,12 @@ export function ModeSelection({ onSingleMatch, onTournament }: { onSingleMatch: 
     </div>
     <div className="mode-cards">
       <button className="mode-card" onClick={onSingleMatch}>
-        <span className="mode-icon" aria-hidden="true">1</span>
-        <span><strong>{t('Single match')}</strong><small>{t('Create and run one match.')}</small></span>
-        <span aria-hidden="true">→</span>
+        <span className="mode-icon"><img src={singleMatchIcon} alt="" /></span>
+        <strong>{t('Single match')}</strong>
       </button>
       <button className="mode-card tournament" onClick={onTournament}>
-        <span className="mode-icon" aria-hidden="true">⌘</span>
-        <span><strong>{t('Tournament')}</strong><small>{t('Set the time, athletes and bracket.')}</small></span>
-        <span aria-hidden="true">→</span>
+        <span className="mode-icon"><img src={tournamentIcon} alt="" /></span>
+        <strong>{t('Tournament')}</strong>
       </button>
     </div>
   </main>;

@@ -7,8 +7,8 @@ export function formatTime(ms: number): string {
   return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
 }
 export function parseTime(value: string): number | null {
-  const match = /^(\d{1,3}):([0-5]\d)$/.exec(value.trim());
+  const match = /^(\d{2}):([0-5]\d)$/.exec(value.trim());
   if (!match) return null;
   const result = (Number(match[1]) * 60 + Number(match[2])) * 1000;
-  return result <= 999 * 60000 + 59000 ? result : null;
+  return result <= 99 * 60000 + 59000 ? result : null;
 }

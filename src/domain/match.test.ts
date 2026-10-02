@@ -38,5 +38,5 @@ describe('match lifecycle', () => {
 });
 describe('time input', () => {
   it.each(['05:00','07:00','12:00','15:00'])('round trips %s', value => expect(formatTime(parseTime(value)!)).toBe(value));
-  it.each(['5:99','-1:00','abc','1:2','1000:00'])('rejects %s', value => expect(parseTime(value)).toBeNull());
+  it.each(['5:99','-1:00','abc','1:2','100:00','01:02:03','01:00.000'])('rejects %s', value => expect(parseTime(value)).toBeNull());
 });
