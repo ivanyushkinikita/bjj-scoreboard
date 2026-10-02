@@ -1,6 +1,12 @@
 import { useSettingsStore } from '../stores/settingsStore';
 import { competitionRu, competitionEn } from './rulesTranslations';
 const ru: Record<string, string> = {
+  'TATAMI CONTROL':'УПРАВЛЕНИЕ ТАТАМИ', 'Choose a mode':'Выберите режим', 'Start one match or prepare a tournament bracket.':'Начните одну схватку или подготовьте турнирную сетку.',
+  'Single match':'Одна схватка', 'Create and run one match.':'Создайте и проведите одну схватку.', 'Tournament':'Турнир', 'Set the time, athletes and bracket.':'Задайте время, спортсменов и сетку.',
+  '← Back':'← Назад', 'TOURNAMENT':'ТУРНИР', 'Tournament details':'Параметры турнира', 'Tournament athletes':'Спортсмены турнира', 'Tournament bracket':'Турнирная сетка', 'Tournament progress':'Ход настройки турнира',
+  'Tournament name':'Название турнира', 'Time per match':'Время на схватку', 'Olympic rules and round-robin formats are planned for a later release.':'Олимпийские правила и круговая система будут добавлены в следующих версиях.', 'Continue':'Продолжить',
+  'Add at least two athletes. Names are formatted consistently as you type.':'Добавьте не менее двух спортсменов. Имена приводятся к единому формату при вводе.', 'Athlete':'Спортсмен', 'Add athlete':'Добавить спортсмена', 'Create bracket':'Создать сетку',
+  'athletes':'спортсменов', 'Randomize bracket':'Случайно распределить', 'Drag athletes into the first-round slots. Random distribution can still be adjusted manually.':'Перетащите спортсменов в слоты первого раунда. Случайное распределение можно менять вручную.', 'Athlete pool':'Список спортсменов', 'Athletes':'Спортсмены', 'Round 1':'Раунд 1', 'Next rounds':'Следующие раунды', 'Drop athlete here':'Перетащите спортсмена сюда', 'Winner':'Победитель', 'Starting the tournament and recording results will be added next.':'Запуск турнира и фиксация результатов будут добавлены следующим шагом.', 'Create next match':'Создать следующую схватку',
   'm':' мин', 'MM:SS':'ММ:СС', '↶ Undo':'↶ Отменить', '↷ Redo':'↷ Повторить', 'Confirm result →':'Подтвердить результат →',
   'Ctrl+Z · Undo &nbsp; Ctrl+Shift+Z · Redo':'Ctrl+Z · Отменить   Ctrl+Shift+Z · Повторить',
   'Sound asset could not be loaded':'Не удалось загрузить звуковой файл',
