@@ -10,7 +10,7 @@ export type TournamentRuleset = 'standard' | 'olympic';
 export const spectatorBackgrounds = ['none', 'arena-tatami', 'belts-smoke', 'ribbons-smoke', 'contour-fog', 'symmetric-smoke', 'custom'] as const;
 export type SpectatorBackground = typeof spectatorBackgrounds[number];
 export type SpectatorBackgroundImage = string | null;
-export const spectatorAnimationPresets = ['arena-dust', 'floating-embers', 'minimal-energy'] as const;
+export const spectatorAnimationPresets = ['arena-dust', 'floating-embers', 'minimal-energy', 'side-smoke', 'low-fog', 'red-blue-mist', 'cinematic'] as const;
 export type SpectatorAnimationPreset = typeof spectatorAnimationPresets[number];
 export const ANIMATABLE_SPECTATOR_BACKGROUNDS = new Set<SpectatorBackground>(['arena-tatami', 'belts-smoke', 'ribbons-smoke', 'contour-fog', 'symmetric-smoke']);
 export function isAnimatableSpectatorBackground(background: SpectatorBackground): boolean {

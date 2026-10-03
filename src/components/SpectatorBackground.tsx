@@ -1,22 +1,23 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from '../app/i18n';
+import { useSettingsStore, type ColorScheme } from '../stores/settingsStore';
 import { isAnimatableSpectatorBackground, spectatorAnimationPresets, spectatorBackgrounds, type SpectatorAnimationPreset, type SpectatorBackground as SpectatorBackgroundId, type SpectatorBackgroundImage } from '../types/tournament';
 import { SpectatorBackgroundParticles } from './SpectatorBackgroundParticles';
-import arenaTatami from '../assets/spectator-arena-tatami.png';
-import beltsSmoke from '../assets/spectator-belts-smoke.png';
-import ribbonsSmoke from '../assets/spectator-ribbons-smoke.png';
-import contourFog from '../assets/spectator-contour-fog.png';
-import symmetricSmoke from '../assets/spectator-symmetric-smoke.png';
+import arenaDark from '../assets/arena-dark.png';
+import arenaLight from '../assets/arena-light.png';
+import ribbonsDark from '../assets/ribbons-dark.png';
+import ribbonsLight from '../assets/ribbons-light.png';
+import contourDark from '../assets/contour-dark.png';
+import contourLight from '../assets/contour-light.png';
 
-const backgroundAssets: Partial<Record<SpectatorBackgroundId, string>> = {
-  'arena-tatami': arenaTatami,
-  'belts-smoke': beltsSmoke,
-  'ribbons-smoke': ribbonsSmoke,
-  'contour-fog': contourFog,
-  'symmetric-smoke': symmetricSmoke,
+const backgroundAssets: Partial<Record<SpectatorBackgroundId, Record<ColorScheme, string>>> = {
+  'arena-tatami': { dark: arenaDark, light: arenaLight },
+  'ribbons-smoke': { dark: ribbonsDark, light: ribbonsLight },
+  'contour-fog': { dark: contourDark, light: contourLight },
 };
 
 export function SpectatorBackground({ variant, image = null, animated = false, preset = 'arena-dust', preview = false }: { variant: SpectatorBackgroundId; image?: SpectatorBackgroundImage; animated?: boolean; preset?: SpectatorAnimationPreset; preview?: boolean }) {
+  const colorScheme = useSettingsStore(state => state.settings.colorScheme);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
   useEffect(() => {
     const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -26,9 +27,9 @@ export function SpectatorBackground({ variant, image = null, animated = false, p
     return () => query.removeEventListener('change', update);
   }, []);
   if (variant === 'none') return null;
-  const source = backgroundAssets[variant] ?? (variant === 'custom' ? image : null);
+  const source = backgroundAssets[variant]?.[colorScheme] ?? (variant === 'custom' ? image : null);
   const shouldAnimate = animated && isAnimatableSpectatorBackground(variant) && !reducedMotion;
-  return <div className={`spectator-background spectator-background--${variant}${source ? ' spectator-background--image' : ''}${preview ? ' spectator-background--preview' : ''}`} style={source ? { '--spectator-image': `url("${source}")` } as CSSProperties : undefined} aria-hidden="true">
+  return <div className={`spectator-background spectator-background--${variant}${source ? ' spectator-background--image' : ''}${shouldAnimate ? ` spectator-background--preset-${preset}` : ''}${preview ? ' spectator-background--preview' : ''}`} style={source ? { '--spectator-image': `url("${source}")` } as CSSProperties : undefined} aria-hidden="true">
     {shouldAnimate && <><SpectatorBackgroundParticles preset={preset}/><span className="spectator-background__glow spectator-background__glow--blue" /><span className="spectator-background__glow spectator-background__glow--red" /><span className="spectator-background__sweep" /><span className="spectator-background__vignette" /></>}
   </div>;
 }

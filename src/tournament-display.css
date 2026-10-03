@@ -121,7 +121,6 @@ dialog:has(.display-settings) {
   background-image: linear-gradient(#02081233, #02081266), var(--spectator-image);
   background-position: center;
   background-size: cover;
-  transform: scaleX(-1);
 }
 
 .app.display {
@@ -165,12 +164,12 @@ dialog:has(.display-settings) {
 
 .spectator-background__glow--blue {
   animation: spectator-background-blue-glow 16s ease-in-out infinite alternate;
-  background: radial-gradient(ellipse at 18% 56%, #1478e48c, transparent 56%);
+  background: radial-gradient(ellipse at 82% 56%, #1478e48c, transparent 56%);
 }
 
 .spectator-background__glow--red {
   animation: spectator-background-red-glow 18s ease-in-out infinite alternate;
-  background: radial-gradient(ellipse at 82% 48%, #e2343f8c, transparent 56%);
+  background: radial-gradient(ellipse at 18% 48%, #e2343f8c, transparent 56%);
 }
 
 .spectator-background__sweep {
@@ -244,7 +243,9 @@ dialog:has(.display-settings) {
   font-weight: 800;
   line-height: .95;
   margin: 0;
-  overflow-wrap: anywhere;
+  hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
   text-transform: uppercase;
 }
 
@@ -349,12 +350,15 @@ dialog:has(.display-settings) {
   display: grid;
   font-size: .72rem;
   gap: 7px;
+  grid-template-rows: 64px minmax(1.75rem, auto);
   height: 100%;
   justify-items: center;
   line-height: 1.2;
+  min-height: calc(64px + 7px + 1.75rem);
   text-decoration: underline;
 }
 .spectator-background-option__upload[data-has-image='true'] { text-decoration: none; }
+.spectator-background-option__upload:not([data-has-image='true']) > span { grid-row: 1 / -1; }
 .spectator-background-option__upload input { display: none; }
 .spectator-background-upload__hint { display: block; margin-top: 10px; }
 .spectator-background-upload__error { color: var(--danger, #ff9a8f); }
@@ -377,3 +381,82 @@ dialog:has(.display-settings) {
   .spectator-background__glow,
   .spectator-background__sweep { animation: none; }
 }
+
+/* The spectator backdrop must cover the entire display window. */
+.app.display { padding: 0; }
+.app.display > .match { margin: 0 32px; }
+
+@media (max-width: 1150px) {
+  .app.display > .match { margin: 0 18px; }
+}
+
+/* Ambient presets leave the centre clear for names, clock, score and branding. */
+.spectator-background--preset-side-smoke .spectator-background__glow,
+.spectator-background--preset-low-fog .spectator-background__glow,
+.spectator-background--preset-red-blue-mist .spectator-background__glow {
+  inset: auto;
+  opacity: .48;
+}
+
+.spectator-background--preset-side-smoke .spectator-background__glow {
+  bottom: -24%;
+  height: 68%;
+  width: 38%;
+}
+
+.spectator-background--preset-side-smoke .spectator-background__glow--red {
+  background: radial-gradient(ellipse at 0 100%, #9e555859, transparent 70%);
+  left: -8%;
+}
+
+.spectator-background--preset-side-smoke .spectator-background__glow--blue {
+  background: radial-gradient(ellipse at 100% 100%, #52769c59, transparent 70%);
+  right: -8%;
+}
+
+.spectator-background--preset-side-smoke .spectator-background__sweep { display: none; }
+
+.spectator-background--preset-low-fog .spectator-background__glow {
+  bottom: -18%;
+  height: 44%;
+  opacity: .34;
+  width: 72%;
+}
+
+.spectator-background--preset-low-fog .spectator-background__glow--red {
+  background: radial-gradient(ellipse at 4% 100%, #a6606040, #bbc0c644 40%, transparent 72%);
+  left: -18%;
+}
+
+.spectator-background--preset-low-fog .spectator-background__glow--blue {
+  background: radial-gradient(ellipse at 96% 100%, #607d9b40, #bbc0c644 40%, transparent 72%);
+  right: -18%;
+}
+
+.spectator-background--preset-low-fog .spectator-background__sweep { display: none; }
+.spectator-background--preset-low-fog .spectator-background__vignette { opacity: .5; }
+
+.spectator-background--preset-red-blue-mist .spectator-background__glow {
+  height: 72%;
+  opacity: .44;
+  top: 12%;
+  width: 36%;
+}
+
+.spectator-background--preset-red-blue-mist .spectator-background__glow--red {
+  background: radial-gradient(ellipse at 0 50%, #a6545961, transparent 72%);
+  left: -8%;
+}
+
+.spectator-background--preset-red-blue-mist .spectator-background__glow--blue {
+  background: radial-gradient(ellipse at 100% 50%, #54779e61, transparent 72%);
+  right: -8%;
+}
+
+.spectator-background--preset-red-blue-mist .spectator-background__sweep { display: none; }
+
+.spectator-background--preset-cinematic .spectator-background__glow { opacity: .42; }
+.spectator-background--preset-cinematic .spectator-background__glow--red { background: radial-gradient(ellipse at 18% 62%, #9d56585c, transparent 58%); }
+.spectator-background--preset-cinematic .spectator-background__glow--blue { background: radial-gradient(ellipse at 82% 62%, #52779d5c, transparent 58%); }
+.spectator-background--preset-cinematic .spectator-background__sweep { animation-duration: 34s; opacity: .26; }
+.spectator-background--preset-cinematic .spectator-background__vignette { opacity: .72; }
