@@ -12,6 +12,9 @@ import { MatchSetup, type MatchSetupDraft } from '../components/MatchSetup';
 import { ModeSelection } from '../components/ModeSelection';
 import { TournamentSetup } from '../components/TournamentSetup';
 import { TournamentBracket } from '../components/TournamentBracket';
+import { FreeTournament } from '../components/FreeTournament';
+import { TournamentDisplayIntro, TournamentDisplayMatchup } from '../components/TournamentDisplay';
+import { SpectatorBackground, SpectatorBackgroundPicker } from '../components/SpectatorBackground';
 import { NameInput } from '../components/NameInput';
 import { CompetitorPanel } from '../components/CompetitorPanel';
 import { EventLog } from '../components/EventLog';
@@ -19,10 +22,10 @@ import { downloadMatchHistoryCsv } from '../services/matchHistoryCsv';
 import { RulesPicker } from '../components/RulesPicker';
 import { disqualificationLimit, resultReason, type AthleteColor } from '../domain/rules';
 import { Modal } from '../components/Modal';
-import type { TournamentDraft, TournamentMatch, TournamentState } from '../types/tournament';
+import { isAnimatableSpectatorBackground, type TournamentDraft, type TournamentMatch, type TournamentState } from '../types/tournament';
 
 type Dialog = 'history' | 'help' | 'time' | 'new' | 'reset' | 'submission' | 'decision' | 'display' | 'settings' | 'close' | 'editA' | 'editB' | 'overtime' | 'returnTournament' | null;
-type Mode = 'choice' | 'single' | 'tournamentSetup' | 'tournamentBracket' | 'tournamentMatch';
+type Mode = 'choice' | 'single' | 'tournamentSetup' | 'tournamentBracket' | 'freeTournament' | 'tournamentMatch';
 export default function App() {
   const { t, locale } = useTranslation();
   const settings = useSettingsStore(state => state.settings);
@@ -36,8 +39,12 @@ export default function App() {
   const [tournament, setTournament] = useState<TournamentState | null>(null);
   const [activeTournamentMatch, setActiveTournamentMatch] = useState<TournamentMatch | null>(null);
   const [monitorList, setMonitorList] = useState<Awaited<ReturnType<typeof monitors>>>([]);
+  const [displayBackgroundDraft, setDisplayBackgroundDraft] = useState<Pick<Settings, 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>>(() => ({ spectatorBackground: settings.spectatorBackground, spectatorBackgroundImage: settings.spectatorBackgroundImage, spectatorBackgroundAnimated: settings.spectatorBackgroundAnimated, spectatorAnimationPreset: settings.spectatorAnimationPreset, spectatorTimerBackground: settings.spectatorTimerBackground }));
   const [, renderTick] = useState(0);
   const expiryPrompt=useRef<string|null>(null);
+  useEffect(() => {
+    if (dialog === 'display') setDisplayBackgroundDraft({ spectatorBackground: settings.spectatorBackground, spectatorBackgroundImage: settings.spectatorBackgroundImage, spectatorBackgroundAnimated: settings.spectatorBackgroundAnimated, spectatorAnimationPreset: settings.spectatorAnimationPreset, spectatorTimerBackground: settings.spectatorTimerBackground });
+  }, [dialog]);
   const openOvertime=()=>{setValue('01:00');setChoice(null);setOvertimeHelpOpen(false);setDialog('overtime');};
   useEffect(()=>{
     const expiry=s.events.filter(e=>e.type==='Time expired').at(-1);
@@ -51,6 +58,9 @@ export default function App() {
   const changeSettings = (value: Partial<Settings>) => { try { useSettingsStore.getState().update(value); } catch { setError('Local save failed. Keep this window open until storage is available.'); } };
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   useEffect(() => { document.documentElement.dataset.theme = settings.colorScheme; }, [settings.colorScheme]);
+  useEffect(() => {
+    if (!isDisplay && tournament) store.setTournamentPresentation({ name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null, spectatorBackground: tournament.draft.spectatorBackground, spectatorBackgroundImage: tournament.draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: tournament.draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: tournament.draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: tournament.draft.spectatorTimerBackground ?? true });
+  }, [tournament?.draft.name, tournament?.draft.logo, tournament?.draft.spectatorBackground, tournament?.draft.spectatorBackgroundImage, tournament?.draft.spectatorBackgroundAnimated, tournament?.draft.spectatorAnimationPreset, tournament?.draft.spectatorTimerBackground]);
   useEffect(() => {
     if (!isDisplay) { try { setSaved(loadMatch()); } catch { setError('The saved match could not be read. Start a new match to continue.'); } }
     setBooted(true);
@@ -107,6 +117,28 @@ export default function App() {
   }, [dialog, saved, s.status, store]);
   const ms = remainingTime(s), winnerName = s.winner === 'A' ? s.competitorA.name : s.competitorB.name;
   const close = () => { setDialog(null); setChoice(null); setDrawSelected(false); setOvertimeHelpOpen(false); };
+  const syncDisplayBackground = (update: Partial<Pick<Settings, 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>>) => {
+    const currentPresentation = useMatchStore.getState().match.tournamentPresentation;
+    const presentation = tournament
+      ? { name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null }
+      : { name: currentPresentation?.name ?? '', logo: currentPresentation?.logo ?? null };
+    const currentBackground = {
+      spectatorBackground: currentPresentation?.spectatorBackground ?? settings.spectatorBackground,
+      spectatorBackgroundImage: currentPresentation?.spectatorBackgroundImage ?? settings.spectatorBackgroundImage,
+      spectatorBackgroundAnimated: currentPresentation?.spectatorBackgroundAnimated ?? settings.spectatorBackgroundAnimated,
+      spectatorAnimationPreset: currentPresentation?.spectatorAnimationPreset ?? settings.spectatorAnimationPreset,
+      spectatorTimerBackground: currentPresentation?.spectatorTimerBackground ?? settings.spectatorTimerBackground,
+    };
+    changeSettings(update);
+    store.setTournamentPresentation({ ...presentation, ...currentBackground, ...update });
+    if (tournament) {
+      setTournament(current => current ? { ...current, draft: { ...current.draft, ...update } } : current);
+    }
+  };
+  const applyDisplayBackground = () => {
+    syncDisplayBackground(displayBackgroundDraft);
+    close();
+  };
   const edit = (side: Side) => { setValue(side === 'A' ? s.competitorA.name : s.competitorB.name); setDialog(side === 'A' ? 'editA' : 'editB'); };
   const returnToSingleSetup = () => {
     const rules = structuredClone(s.rules);
@@ -126,35 +158,57 @@ export default function App() {
     const athleteB = tournament.draft.competitors[match.athleteB]?.trim();
     if (!athleteA || !athleteB) return;
     store.setup(athleteA, athleteB, tournament.draft.matchDuration, s.rules, tournament.draft.matchColors);
+    store.setTournamentPresentation({ name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null, spectatorBackground: tournament.draft.spectatorBackground, spectatorBackgroundImage: tournament.draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: tournament.draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: tournament.draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: tournament.draft.spectatorTimerBackground ?? true });
     setActiveTournamentMatch(match);
     setMode('tournamentMatch');
   };
   const returnToTournamentBracket = (stopTimer: boolean) => {
     if (stopTimer && s.status === 'running') store.toggleTimer();
     close();
-    setMode('tournamentBracket');
+    setMode(tournament?.draft.format === 'free' ? 'freeTournament' : 'tournamentBracket');
   };
   const completeTournamentMatch = () => {
     if (!tournament || !activeTournamentMatch || !s.winner) return;
     const winnerId = s.winner === 'A' ? activeTournamentMatch.athleteA : activeTournamentMatch.athleteB;
     if (winnerId === null) return;
-    setTournament(current => current ? { ...current, results: { ...current.results, [activeTournamentMatch.id]: winnerId } } : current);
+    setTournament(current => {
+      if (!current) return current;
+      const results = { ...current.results, [activeTournamentMatch.id]: winnerId };
+      if (current.draft.format !== 'free' || activeTournamentMatch.athleteA === null || activeTournamentMatch.athleteB === null) return { ...current, results };
+      return { ...current, results, freeMatches: [...(current.freeMatches ?? []), { id: activeTournamentMatch.id, athleteA: activeTournamentMatch.athleteA, athleteB: activeTournamentMatch.athleteB, winnerId, completedAt: Date.now(), athleteAName: s.competitorA.name, athleteBName: s.competitorB.name, winnerName: s.winner === 'A' ? s.competitorA.name : s.competitorB.name }] };
+    });
     setActiveTournamentMatch(null);
+    const presentation = s.tournamentPresentation;
     store.reset();
-    setMode('tournamentBracket');
+    store.setTournamentPresentation(presentation);
+    setMode(tournament.draft.format === 'free' ? 'freeTournament' : 'tournamentBracket');
   };
   const startTournament = (draft: TournamentDraft, seeds: (number | null)[]) => {
     const activeSeeds = Array.from({ length: Math.ceil(seeds.length / 2) }, (_, index) => [seeds[index * 2] ?? null, seeds[index * 2 + 1] ?? null] as const)
       .filter(([athleteA, athleteB]) => athleteA !== null || athleteB !== null)
       .flat();
-    setTournament({ draft: structuredClone(draft), seeds: activeSeeds, results: {}, roundRobinMatchOrder: [], roundRobinView: 'list' });
-    setMode('tournamentBracket');
+    store.setTournamentPresentation({ name: draft.name.trim(), logo: draft.logo ?? null, spectatorBackground: draft.spectatorBackground, spectatorBackgroundImage: draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: draft.spectatorTimerBackground ?? true });
+    setTournament({ draft: structuredClone(draft), seeds: activeSeeds, results: {}, roundRobinMatchOrder: [], roundRobinView: 'list', freeMatches: [] });
+    setMode(draft.format === 'free' ? 'freeTournament' : 'tournamentBracket');
   };
   if (!booted) return null;
+  const spectatorBackground = s.tournamentPresentation?.spectatorBackground ?? settings.spectatorBackground;
+  const spectatorBackgroundImage = s.tournamentPresentation?.spectatorBackgroundImage ?? settings.spectatorBackgroundImage;
+  const spectatorBackgroundAnimated = s.tournamentPresentation?.spectatorBackgroundAnimated ?? settings.spectatorBackgroundAnimated;
+  const spectatorAnimationPreset = s.tournamentPresentation?.spectatorAnimationPreset ?? settings.spectatorAnimationPreset;
+  const spectatorTimerBackground = s.tournamentPresentation?.spectatorTimerBackground ?? settings.spectatorTimerBackground;
+  const timerWasStarted = s.status === 'running' || s.status === 'paused' || s.status === 'finished' || s.events.some(event => event.type === 'Timer started' || event.type === 'Timer resumed');
+  if (isDisplay && spectatorBackground !== 'none') {
+    const namesAreKnown = Boolean(s.competitorA.name.trim() && s.competitorB.name.trim());
+    const presentation = s.tournamentPresentation ?? { name: '', logo: null, spectatorBackground, spectatorBackgroundImage, spectatorBackgroundAnimated, spectatorAnimationPreset, spectatorTimerBackground };
+    if (!namesAreKnown) return <div className="app display"><TournamentDisplayIntro presentation={presentation} showBranding={Boolean(s.tournamentPresentation)}/></div>;
+    if (!timerWasStarted) return <div className="app display"><TournamentDisplayMatchup athleteA={s.competitorA.name} athleteB={s.competitorB.name} colorA={s.competitorA.color ?? 'var(--athlete-red)'} colorB={s.competitorB.color ?? 'var(--athlete-blue)'} spectatorBackground={spectatorBackground} spectatorBackgroundImage={spectatorBackgroundImage} spectatorBackgroundAnimated={spectatorBackgroundAnimated} spectatorAnimationPreset={spectatorAnimationPreset}/></div>;
+  }
   return <div className={`app ${isDisplay ? 'display' : ''}`}>
+    {isDisplay && (!timerWasStarted || spectatorTimerBackground) && <SpectatorBackground variant={spectatorBackground} image={spectatorBackgroundImage} animated={spectatorBackgroundAnimated} preset={spectatorAnimationPreset}/>}
     {!isDisplay && <header><a className="brand" href="#" onClick={e => e.preventDefault()}><span className="brand-mark">≋</span>{t("TATAMI")}<span className="brand-sub">{t("BJJ SCOREBOARD")}</span></a><div className="header-actions"><span className="offline"><span className="live-dot"/> {t("LOCAL / OFFLINE")}</span><button onClick={() => setDialog('help')} aria-label={t("Keyboard shortcuts")}>⌨ <span>{t("Shortcuts")}</span></button><button onClick={() => { run(openDisplay); }}>▣ <span>{t("Open Scoreboard Display")}</span></button><button aria-label={t("Settings")} onClick={() => setDialog('settings')}>⚙ <span>{t('Settings')}</span></button></div></header>}
     {error && !isDisplay && <div className="error" role="alert">{t(error.replace(/^Error: /,''))}<button onClick={() => setError('')}>{t("Dismiss")}</button></div>}
-    {!isDisplay && mode === 'tournamentBracket' && tournament ? <TournamentBracket tournament={tournament} activeMatchId={activeTournamentMatch?.id ?? null} onStartMatch={startTournamentMatch} onReplayMatch={match => { setTournament(current => { if (!current) return current; const results = { ...current.results }; delete results[match.id]; return { ...current, results }; }); startTournamentMatch(match); }} onReorderRoundRobinMatches={matchIds => setTournament(current => current ? { ...current, roundRobinMatchOrder: matchIds } : current)} onRoundRobinViewChange={view => setTournament(current => current ? { ...current, roundRobinView: view } : current)} onBack={() => setMode('tournamentSetup')} onResumeMatch={() => setMode('tournamentMatch')} onExit={() => { setActiveTournamentMatch(null); store.reset(); setTournament(null); setMode('choice'); }}/> : s.status === 'setup' && !isDisplay ? mode === 'choice' ? <ModeSelection onSingleMatch={()=>{setSingleSetupDraft(null);setMode('single');}} onTournament={()=>setMode('tournamentSetup')}/> : mode === 'tournamentSetup' ? <TournamentSetup tournament={tournament} onBack={() => setMode(tournament ? 'tournamentBracket' : 'choice')} onStart={(draft, seeds) => { if (!tournament) { startTournament(draft, seeds); return; } setTournament(current => current ? { ...current, draft: structuredClone(draft), seeds: [...seeds] } : current); setMode('tournamentBracket'); }}/> : <MatchSetup initial={singleSetupDraft ?? undefined} onInitialConsumed={() => setSingleSetupDraft(null)} onBack={()=>setMode('choice')}/> : <main className={`match ${activeTournamentMatch ? 'tournament-scoreboard' : ''}`}>
+    {!isDisplay && mode === 'tournamentBracket' && tournament ? <TournamentBracket tournament={tournament} activeMatchId={activeTournamentMatch?.id ?? null} onStartMatch={startTournamentMatch} onReplayMatch={match => { setTournament(current => { if (!current) return current; const results = { ...current.results }; delete results[match.id]; return { ...current, results }; }); startTournamentMatch(match); }} onReorderRoundRobinMatches={matchIds => setTournament(current => current ? { ...current, roundRobinMatchOrder: matchIds } : current)} onRoundRobinViewChange={view => setTournament(current => current ? { ...current, roundRobinView: view } : current)} onBack={() => setMode('tournamentSetup')} onResumeMatch={() => setMode('tournamentMatch')} onExit={() => { setActiveTournamentMatch(null); store.reset(); setTournament(null); setMode('choice'); }}/> : !isDisplay && mode === 'freeTournament' && tournament ? <FreeTournament tournament={tournament} activeMatchId={activeTournamentMatch?.id ?? null} onStartMatch={startTournamentMatch} onAddAthlete={name => setTournament(current => current ? { ...current, draft: { ...current.draft, competitors: [...current.draft.competitors, name] } } : current)} onRemoveAthlete={athleteId => setTournament(current => current ? { ...current, draft: { ...current.draft, competitors: current.draft.competitors.map((name, index) => index === athleteId ? '' : name) } } : current)} onBack={() => setMode('tournamentSetup')} onResumeMatch={() => setMode('tournamentMatch')} onExit={() => { setActiveTournamentMatch(null); store.reset(); setTournament(null); setMode('choice'); }}/> : s.status === 'setup' && !isDisplay ? mode === 'choice' ? <ModeSelection onSingleMatch={()=>{setSingleSetupDraft(null);setMode('single');}} onTournament={()=>setMode('tournamentSetup')}/> : mode === 'tournamentSetup' ? <TournamentSetup tournament={tournament} onBack={() => setMode(tournament ? tournament.draft.format === 'free' ? 'freeTournament' : 'tournamentBracket' : 'choice')} onStart={(draft, seeds) => { if (!tournament) { startTournament(draft, seeds); return; } setTournament(current => current ? { ...current, draft: structuredClone(draft), seeds: [...seeds] } : current); setMode(draft.format === 'free' ? 'freeTournament' : 'tournamentBracket'); }}/> : <MatchSetup initial={singleSetupDraft ?? undefined} onInitialConsumed={() => setSingleSetupDraft(null)} onBack={()=>setMode('choice')}/> : <main className={`match ${activeTournamentMatch ? 'tournament-scoreboard' : ''}`}>
       {!isDisplay && activeTournamentMatch && <button className="tournament-match-back" disabled={s.confirmed} onClick={() => s.events.some(event => event.type === 'Timer started') ? setDialog('returnTournament') : returnToTournamentBracket(false)}>{t('Back to bracket')}</button>}
       {s.overtimeAttacker && <div className="rules-alert">{t('Overtime')} · {t('Attacker')}: {s.overtimeAttacker==='A'?s.competitorA.name:s.competitorB.name}</div>}
       {!s.confirmed && (s.competitorA.penalties>=disqualificationLimit(s.rules)||s.competitorB.penalties>=disqualificationLimit(s.rules)||(s.rules.sport==='grappling'&&Math.abs(s.competitorA.points-s.competitorB.points)>=15)) && <div className="rules-alert">{t('Victory condition reached — referee confirmation required')}{!isDisplay&&<button onClick={()=>{setChoice(s.competitorA.penalties>=disqualificationLimit(s.rules)?'B':s.competitorB.penalties>=disqualificationLimit(s.rules)?'A':s.competitorA.points>s.competitorB.points?'A':'B');setDialog('decision');}}>{t('Confirm result')}</button>}</div>}
@@ -167,7 +221,7 @@ export default function App() {
     {s.confirmed&&s.showWinner&&s.winner&&<div className={`winner-celebration ${s.winner==='A'?s.competitorA.color:s.competitorB.color}`} role="dialog" aria-modal="true" aria-label={t('Winner')}><div className="winner-rays"/><div className="winner-content"><p>{t('WINS')}</p><h1 style={{fontSize: winnerName.length>35?'clamp(40px, 7vw, 120px)':winnerName.length>20?'clamp(48px, 9vw, 160px)':'clamp(64px, 13vw, 220px)'}}>{winnerName}</h1><span>{t(`BY ${s.result?.toUpperCase()}`)}</span>{!isDisplay && (activeTournamentMatch ? <button autoFocus onClick={completeTournamentMatch}>{t('Back to tournament')}</button> : <div className="winner-actions"><button autoFocus onClick={()=>{store.reset();setMode('single');}}>{t('Create next match')}</button><button onClick={()=>{store.reset();setMode('choice');}}>{t('Main screen')}</button></div>)}</div>{!isDisplay && <button className="winner-history-export" onClick={() => downloadMatchHistoryCsv(s, locale)}>{t('Export match history')}</button>}</div>}
     {!isDisplay&&s.confirmed&&s.winner&&!s.showWinner&&<button className="winner-replay" onClick={()=>store.presentWinner(true)}>{t('Show winner')}</button>}
     {saved && !isDisplay && <Modal title="Welcome back to the mat"><p>{t("A previous match was saved locally.")}</p><div className="restore-summary">{saved.competitorA.name} <strong>{saved.competitorA.points} : {saved.competitorB.points}</strong> {saved.competitorB.name}</div><p>{t("Running clocks include the time elapsed while the application was closed.")}</p><div className="dialog-actions"><button onClick={() => { setSaved(null); store.reset(); setMode('single'); }}>{t("START NEW MATCH")}</button><button className="primary" onClick={() => { expiryPrompt.current=saved.events.filter(e=>e.type==='Time expired').at(-1)?.id||null; run(unlockAudio); store.replace(saved); store.tick(); setSaved(null); }}>{t("RESTORE PREVIOUS MATCH")}</button></div></Modal>}
-    {dialog && <Modal title={{ history:'Match history', help:'Keyboard shortcuts', time:'Adjust remaining time', new:'Start a new match?', reset:'Reset the match clock?', submission:'Submission victory', decision:'Confirm match result', display:'Scoreboard display', settings:'Settings', close:'Close application?', editA:'Edit competitor A', editB:'Edit competitor B', overtime:'Extra Time', returnTournament:'Return to bracket' }[dialog]} titleAccessory={dialog === 'overtime' ? <div className={`overtime-help ${overtimeHelpOpen ? 'open' : ''}`}><button type="button" aria-label={t('Extra time setup instructions')} aria-expanded={overtimeHelpOpen} onClick={() => setOvertimeHelpOpen(current => !current)}>?</button><span role="tooltip">{t('Extra time setup instructions')}</span></div> : undefined} close={close} closeOnBackdrop={dialog === 'settings' || dialog === 'submission' || dialog === 'decision'}>
+    {dialog && <Modal title={{ history:'Match history', help:'Keyboard shortcuts', time:'Adjust remaining time', new:'Start a new match?', reset:'Reset the match clock?', submission:'Submission victory', decision:'Confirm match result', display:'Scoreboard display', settings:'Settings', close:'Close application?', editA:'Edit competitor A', editB:'Edit competitor B', overtime:'Extra Time', returnTournament:'Return to bracket' }[dialog]} titleAccessory={dialog === 'overtime' ? <div className={`overtime-help ${overtimeHelpOpen ? 'open' : ''}`}><button type="button" aria-label={t('Extra time setup instructions')} aria-expanded={overtimeHelpOpen} onClick={() => setOvertimeHelpOpen(current => !current)}>?</button><span role="tooltip">{t('Extra time setup instructions')}</span></div> : undefined} close={close} closeOnBackdrop={dialog === 'settings' || dialog === 'display' || dialog === 'submission' || dialog === 'decision'}>
       {dialog === 'history' && <EventLog events={s.events} onExport={() => downloadMatchHistoryCsv(s, locale)}/>}
       {dialog === 'help' && <p>{t('Backspace · Reset timer (with confirmation)')}</p>}
       {dialog === 'help' && <><div className="shortcut-grid"><div><h3>{t((s.competitorA.color||'blue').toUpperCase())+' · A'}</h3><p>{t("Q / W / E")}<b>+2 / +3 / +4</b></p><p>{t("A")}<b>{t("Advantage +")}</b></p><p>{t("S")}<b>{t("Penalty +")}</b></p></div><div><h3>{t((s.competitorB.color||'white').toUpperCase())+' · B'}</h3><p>{t("I / O / P")}<b>+2 / +3 / +4</b></p><p>{t("K")}<b>{t("Advantage +")}</b></p><p>{t("L")}<b>{t("Penalty +")}</b></p></div></div><p>{t("Space · Start / Pause / Resume")}</p><p>{t("Ctrl+Z · Undo &nbsp; Ctrl+Shift+Z · Redo")}</p><p>{t("F11 · Control window fullscreen")}</p><small>{t("Shortcuts are disabled while editing or when a dialog is open. Escape only dismisses dialogs.")}</small></>}
@@ -182,7 +236,8 @@ export default function App() {
         <div className="dialog-actions"><button type="button" onClick={close}>{t('Cancel')}</button><button className="primary" disabled={!parseTime(value)||!canStartOvertime(s)||(s.rules.sport==='grappling'&&!choice)}>{t('Set extra time')}</button></div>
       </form>}
       {dialog === 'settings' && <><h3>{t('Sport')}</h3><RulesPicker rules={s.rules} onChange={canConfigureRules(s)?store.configureRules:undefined}/>{!canConfigureRules(s)&&<small>{t('Rules are locked after the match starts. Start a new match to change them.')}</small>}<label>{t('Language')}<select aria-label={t('Language')} value={settings.locale} onChange={e => changeSettings({locale:e.target.value as 'en'|'ru'})}><option value="ru">Русский</option><option value="en">English</option></select></label><label>{t('Theme')}<select aria-label={t('Theme')} value={settings.colorScheme} onChange={e => changeSettings({colorScheme:e.target.value as Settings['colorScheme']})}><option value="dark">{t('Dark')}</option><option value="light">{t('Light')}</option></select></label><h3>{t('Sounds')}</h3><div className="sound-settings-grid"><fieldset className="sound-setting"><legend>{t('Start-of-match gong')}</legend><label className="sound-choice"><input type="checkbox" checked={settings.startSound} onChange={e => changeSettings({startSound:e.target.checked})}/><span>{t('Play sound when the match timer starts')}</span></label><select className="sound-select" aria-label={t('Start-of-match gong')} value={settings.startSoundVariant} onChange={e => changeSettings({startSoundVariant:e.target.value as Settings['startSoundVariant']})}><option value="bright">{t('Bright gong')}</option><option value="classic">{t('Classic gong')}</option><option value="chime">{t('Bell chime')}</option></select><button className="sound-test" onClick={() => run(() => playStart(settings.startSoundVariant))}>{t('Test start sound')}</button></fieldset><fieldset className="sound-setting"><legend>{t('End-of-match gong')}</legend><label className="sound-choice"><input type="checkbox" checked={settings.endSound} onChange={e => changeSettings({endSound:e.target.checked})}/><span>{t('Play sound when time expires')}</span></label><select className="sound-select" aria-label={t('End-of-match gong')} value={settings.endSoundVariant} onChange={e => changeSettings({endSoundVariant:e.target.value as Settings['endSoundVariant']})}><option value="bright">{t('Bright gong')}</option><option value="classic">{t('Classic gong')}</option><option value="chime">{t('Bell chime')}</option></select><button className="sound-test" onClick={() => run(() => playHorn(settings.endSoundVariant))}>{t('Test end-of-match sound')}</button></fieldset></div><small>{t('Sound settings are saved on this device. Start sound plays on Start, not on Resume.')}</small><button className="wide" onClick={() => { setDialog('display'); run(async () => setMonitorList(await monitors())); }}>{t('Display settings')}</button><div className="settings-author">Никита Иванюшкин</div></>}
-      {dialog === 'display' && <><button className="back-button settings-display-back" onClick={() => setDialog('settings')}>{t('Back')}</button><p>{t("Move the spectator window to a monitor, then enable fullscreen.")}</p><div className="display-actions"><button onClick={() => run(openDisplay)}>{t("Open Scoreboard Display")}</button><button onClick={() => run(() => fullscreen(true))}>{t("Toggle display fullscreen")}</button><button onClick={() => run(closeDisplay)}>{t("Close display")}</button></div><label>{t("Available monitors")}<select defaultValue="" onChange={e => run(() => moveDisplay(Number(e.target.value)))}><option value="" disabled>{t("Select a monitor")}</option>{monitorList.map((m,i) => <option key={i} value={i}>{m.name || `Monitor ${i+1}`} · {m.size.width} × {m.size.height}</option>)}</select></label>{!monitorList.length && <small>{t("Monitor selection is available in the desktop application. You can also drag the display window manually.")}</small>}<button className="wide" onClick={() => run(() => fullscreen())}>{t("Toggle control fullscreen")}</button></>}
+      {dialog === 'settings' && <div className="settings-author settings-author--footer">Никита Иванюшкин</div>}
+      {dialog === 'display' && <div className="display-settings"><p>{t("Move the spectator window to a monitor, then enable fullscreen.")}</p><div className="display-actions"><button onClick={() => run(openDisplay)}>{t("Open Scoreboard Display")}</button><button onClick={() => run(() => fullscreen(true))}>{t("Toggle display fullscreen")}</button><button onClick={() => run(closeDisplay)}>{t("Close display")}</button></div><label>{t("Available monitors")}<select defaultValue="" onChange={e => run(() => moveDisplay(Number(e.target.value)))}><option value="" disabled>{t("Select a monitor")}</option>{monitorList.map((m,i) => <option key={i} value={i}>{m.name || `Monitor ${i+1}`} · {m.size.width} × {m.size.height}</option>)}</select></label>{!monitorList.length && <small>{t("Monitor selection is available in the desktop application. You can also drag the display window manually.")}</small>}<button className="wide" onClick={() => run(() => fullscreen())}>{t("Toggle control fullscreen")}</button><SpectatorBackgroundPicker value={displayBackgroundDraft.spectatorBackground} image={displayBackgroundDraft.spectatorBackgroundImage} animated={displayBackgroundDraft.spectatorBackgroundAnimated} preset={displayBackgroundDraft.spectatorAnimationPreset} timerBackground={displayBackgroundDraft.spectatorTimerBackground} onChange={spectatorBackground => { const update = { spectatorBackground, spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) ? displayBackgroundDraft.spectatorBackgroundAnimated : false }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onImageChange={spectatorBackgroundImage => { const update = { spectatorBackgroundImage, ...(spectatorBackgroundImage ? { spectatorBackground: 'custom' as const } : {}) }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onAnimatedChange={spectatorBackgroundAnimated => setDisplayBackgroundDraft(current => ({ ...current, spectatorBackgroundAnimated }))} onPresetChange={spectatorAnimationPreset => setDisplayBackgroundDraft(current => ({ ...current, spectatorAnimationPreset }))} onTimerBackgroundChange={spectatorTimerBackground => setDisplayBackgroundDraft(current => ({ ...current, spectatorTimerBackground }))}/><div className="dialog-actions display-settings__actions"><button className="primary" onClick={applyDisplayBackground}>{t('Apply')}</button></div></div>}
     </Modal>}
   </div>;
 }

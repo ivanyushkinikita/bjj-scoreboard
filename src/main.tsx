@@ -4,4 +4,6 @@ import './styles.css';
 import './settings.css';
 import './competition.css';
 import './themes.css';
+import './free-tournament.css';
+import './tournament-display.css';
 createRoot(document.getElementById('root')!).render(<App/>);

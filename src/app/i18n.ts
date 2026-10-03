@@ -1,6 +1,10 @@
 import { useSettingsStore } from '../stores/settingsStore';
 import { competitionRu, competitionEn } from './rulesTranslations';
 const ru: Record<string, string> = {
+  'Spectator window appearance':'Оформление зрительского окна', 'Spectator background':'Фон зрительского окна', 'Animate background':'\u0410\u043d\u0438\u043c\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0444\u043e\u043d', 'Animation':'\u0410\u043d\u0438\u043c\u0430\u0446\u0438\u044f', 'Animation preset: arena-dust':'\u041f\u044b\u043b\u044c \u0430\u0440\u0435\u043d\u044b', 'Animation preset: floating-embers':'\u041f\u043b\u0430\u0432\u0430\u044e\u0449\u0438\u0435 \u043e\u0433\u043e\u043d\u044c\u043a\u0438', 'Animation preset: minimal-energy':'\u041c\u0438\u043d\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u044d\u043d\u0435\u0440\u0433\u0438\u044f', 'Spectator background: none':'Без фона', 'Spectator background: arena-tatami':'Арена с татами', 'Spectator background: belts-smoke':'Пояса в дыму', 'Spectator background: ribbons-smoke':'Ленты в дымке', 'Spectator background: contour-fog':'Контурный туман', 'Spectator background: symmetric-smoke':'Симметричный дым', 'Spectator background: custom':'Свой фон',
+  'Upload custom background':'Загрузить свой фон', 'Replace custom background':'Заменить свой фон', 'Remove custom background':'Удалить свой фон', 'Raster image up to 5 MB. The image is saved only on this device.':'Растровое изображение до 5 МБ. Сохраняется только на этом устройстве.', 'Background must be a raster image.':'Фон должен быть растровым изображением.', 'The background must be 5 MB or smaller.':'Размер фона не должен превышать 5 МБ.',
+  'Tournament logo (PNG)':'Логотип турнира (PNG)', 'Upload a transparent PNG up to 2 MB.':'Загрузите прозрачный PNG до 2 МБ.', 'Logo must be a PNG image.':'Логотип должен быть в формате PNG.', 'The logo must be 2 MB or smaller.':'Размер логотипа не должен превышать 2 МБ.', 'Remove logo':'Удалить логотип', 'Tournament logo':'Логотип турнира',
+  'Timer background':'\u0424\u043e\u043d \u0442\u0430\u0439\u043c\u0435\u0440\u0430',
   'Back':'\u041d\u0430\u0437\u0430\u0434',
   'Export CSV':'\u042d\u043a\u0441\u043f\u043e\u0440\u0442 CSV', 'Export match history':'\u0412\u044b\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0441\u0442\u043e\u0440\u0438\u044e \u0441\u0445\u0432\u0430\u0442\u043a\u0438', 'Shortcut: {key}':'\u0413\u043e\u0440\u044f\u0447\u0430\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0430: {key}',
   'Start-of-match gong':'\u0413\u043e\u043d\u0433 \u043d\u0430\u0447\u0430\u043b\u0430 \u0441\u0445\u0432\u0430\u0442\u043a\u0438', 'End-of-match gong':'\u0413\u043e\u043d\u0433 \u043e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u044f', 'No sound':'\u0411\u0435\u0437 \u0437\u0432\u0443\u043a\u0430', 'Bright gong':'\u0417\u0432\u043e\u043d\u043a\u0438\u0439 \u0433\u043e\u043d\u0433', 'Classic gong':'\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0433\u043e\u043d\u0433', 'Bell chime':'\u041a\u043e\u043b\u043e\u043a\u043e\u043b\u044c\u0447\u0438\u043a',
@@ -31,7 +35,7 @@ const ru: Record<string, string> = {
   'Ctrl+Z · Undo &nbsp; Ctrl+Shift+Z · Redo':'Ctrl+Z · Отменить   Ctrl+Shift+Z · Повторить',
   'Sound asset could not be loaded':'Не удалось загрузить звуковой файл',
   'BJJ SCOREBOARD':'ТАБЛО ДЖИУ-ДЖИТСУ', 'LOCAL / OFFLINE':'ЛОКАЛЬНО / ОФЛАЙН', 'Shortcuts':'Клавиши', 'Keyboard shortcuts':'Горячие клавиши',
-  'Open Scoreboard Display':'Открыть зрительское табло', 'Display settings':'Настройки табло', 'Settings':'Настройки', 'Language':'Язык', 'Theme':'Тема', 'Dark':'Тёмная', 'Light':'Светлая',
+  'Open Scoreboard Display':'Открыть зрительское табло', 'Display settings':'Настройки табло', 'Settings':'Настройки', 'Apply':'Применить', 'Language':'Язык', 'Theme':'Тема', 'Dark':'Тёмная', 'Light':'Светлая',
   'READY FOR THE NEXT ROUND':'ГОТОВЫ К СЛЕДУЮЩЕЙ СХВАТКЕ', 'Every point.':'Каждый балл.', 'Every second.':'Каждая секунда.',
   'Set the match. Take control of the tatami.':'Настройте схватку. Управляйте происходящим на татами.', 'Offline. On your side.':'Без интернета. Всегда рядом.',
   'MATCH SETUP':'НАСТРОЙКА СХВАТКИ', 'Let’s step onto the mat.':'Время выйти на татами.', 'Competitor A · BLUE':'Спортсмен A · СИНИЙ', 'Competitor B · WHITE':'Спортсмен B · БЕЛЫЙ',
@@ -75,6 +79,12 @@ const ru: Record<string, string> = {
   'Local save failed. Keep this window open until storage is available.':'Не удалось сохранить данные. Не закрывайте окно, пока хранилище не станет доступно.',
   'A {field} minus':'A: {field}, уменьшить', 'A {field} plus':'A: {field}, увеличить', 'B {field} minus':'B: {field}, уменьшить', 'B {field} plus':'B: {field}, увеличить',
   'A plus {n}':'A: плюс {n}', 'B plus {n}':'B: плюс {n}', 'Competitor {side} scoreboard':'Табло спортсмена {side}',
+  'FREE TOURNAMENT':'СВОБОДНЫЙ ТУРНИР', 'Free tournament':'Свободный турнир', 'Create any match from the participant list and keep a live leaderboard.':'Создавайте любые пары из списка участников и ведите таблицу результатов.',
+  'Current match':'Текущая схватка', 'Leaderboard':'Лидерборд', 'Drag an athlete into a match position.':'Перетащите спортсмена в позицию схватки.', 'Drag two athletes into the coloured positions, then start the match.':'Перетащите двух спортсменов в цветные позиции, затем начните схватку.',
+  'Search match history':'Поиск по истории схваток', 'No matches found.':'Схватки не найдены.',
+  'Select athlete':'Выберите спортсмена', 'Select an athlete for this match position.':'Выберите спортсмена для этой позиции схватки.', 'Remove from match':'Убрать из схватки',
+  'Confirm tournament winner':'Подтвердить победителя турнира', 'Confirm {name} as the tournament winner?':'Подтвердить {name} как победителя турнира?', 'Change winner':'Изменить победителя', 'Select tournament winner':'Выберите победителя турнира',
+  'End tournament':'Закончить турнир',
 };
 export function translate(text: string, locale: 'en' | 'ru', values: Record<string, string | number> = {}): string {
   let result = locale === 'ru' ? competitionRu[text] || ru[text] || text : competitionEn[text] || text;

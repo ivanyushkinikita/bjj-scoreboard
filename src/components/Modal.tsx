@@ -5,5 +5,15 @@ export function Modal({ title, titleAccessory, children, close, closeOnBackdrop 
   const { t } = useTranslation();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { const d = ref.current!; d.showModal(); return () => d.close(); }, []);
+  useEffect(() => {
+    if (!close) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      close();
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [close]);
   return createPortal(<dialog aria-label={t(title)} ref={ref} onClick={e => { if (closeOnBackdrop && e.target === e.currentTarget) close?.(); }} onSubmit={e=>e.stopPropagation()} onCancel={e => { e.preventDefault(); close?.(); }}><div className="modal-head"><div className="modal-title-row"><h2>{t(title)}</h2>{titleAccessory}</div>{close && <button type="button" aria-label={t("Close dialog")} onClick={close}>×</button>}</div>{children}</dialog>,document.body);
 }

@@ -1,0 +1,379 @@
+.tournament-logo-control {
+  display: grid;
+  gap: 8px;
+}
+
+.tournament-logo-control__hint {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.tournament-logo-control__error {
+  color: var(--danger);
+  font-size: 0.82rem;
+}
+
+.tournament-logo-preview {
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  padding: 10px;
+}
+
+.tournament-logo-preview img {
+  height: 54px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.tournament-branding-button {
+  justify-content: center;
+  margin: 4px 0;
+  width: 100%;
+}
+
+.tournament-branding-dialog {
+  display: grid;
+  gap: 8px;
+  max-height: calc(85vh - 132px);
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tournament-branding-dialog__actions {
+  background: var(--color-surface, #151e2b);
+  bottom: 0;
+  margin-top: 16px;
+  padding-top: 12px;
+  position: sticky;
+}
+
+.display-settings {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(85vh - 112px);
+}
+
+.display-settings .spectator-background-picker {
+  margin-top: min(48px, 5vh);
+}
+
+dialog:has(.display-settings) {
+  overflow-y: auto;
+  padding-bottom: 0;
+}
+
+.display-settings__actions {
+  background: var(--color-surface, #151e2b);
+  bottom: 0;
+  box-shadow: 0 -12px 20px var(--color-surface, #151e2b);
+  margin-top: auto;
+  padding: 16px 0 20px;
+  position: sticky;
+  z-index: 2;
+}
+
+.settings-author { display: none; }
+
+.settings-author--footer {
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-subtle);
+  display: block;
+  font-size: 10px;
+  letter-spacing: .05em;
+  margin-top: 24px;
+  opacity: .48;
+  padding-top: 12px;
+  text-align: center;
+}
+
+.tournament-display-screen {
+  align-items: center;
+  background: #08111d;
+  color: #fff;
+  display: flex;
+  inset: 0;
+  isolation: isolate;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  position: fixed;
+  width: 100vw;
+}
+
+.spectator-background {
+  --spectator-base: #08111d;
+  --spectator-primary: #14487b;
+  --spectator-secondary: #0e284d;
+  background:
+    radial-gradient(circle at 52% 42%, color-mix(in srgb, var(--spectator-primary) 44%, transparent), transparent 36%),
+    linear-gradient(135deg, var(--spectator-base), var(--spectator-secondary));
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.spectator-background--image {
+  background-image: linear-gradient(#02081233, #02081266), var(--spectator-image);
+  background-position: center;
+  background-size: cover;
+  transform: scaleX(-1);
+}
+
+.app.display {
+  isolation: isolate;
+  overflow: visible;
+}
+
+.app.display > .spectator-background {
+  height: 100dvh;
+  inset: 0;
+  position: fixed;
+  width: 100vw;
+}
+.app.display > :not(.spectator-background) { position: relative; z-index: 1; }
+
+.spectator-background__glow,
+.spectator-background__sweep,
+.spectator-background__vignette {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.spectator-background__particles {
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.spectator-background__particles canvas {
+  inset: 0;
+  pointer-events: none;
+  position: absolute !important;
+}
+
+.spectator-background__glow {
+  inset: -22%;
+  z-index: 2;
+}
+
+.spectator-background__glow--blue {
+  animation: spectator-background-blue-glow 16s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 18% 56%, #1478e48c, transparent 56%);
+}
+
+.spectator-background__glow--red {
+  animation: spectator-background-red-glow 18s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 82% 48%, #e2343f8c, transparent 56%);
+}
+
+.spectator-background__sweep {
+  animation: spectator-background-sweep 20s ease-in-out infinite;
+  background: linear-gradient(110deg, transparent 34%, #ffffff1a 49%, transparent 64%);
+  transform: translateX(-110%);
+  z-index: 3;
+}
+
+.spectator-background__vignette {
+  background: radial-gradient(ellipse at center, transparent 38%, #01050a5c 100%);
+  z-index: 4;
+}
+
+@keyframes spectator-background-blue-glow {
+  from { transform: translate3d(-5%, -3%, 0) scale(.94); }
+  to { transform: translate3d(8%, 5%, 0) scale(1.08); }
+}
+
+@keyframes spectator-background-red-glow {
+  from { transform: translate3d(5%, 4%, 0) scale(.95); }
+  to { transform: translate3d(-7%, -4%, 0) scale(1.09); }
+}
+
+@keyframes spectator-background-sweep {
+  0%, 36% { transform: translateX(-110%); opacity: 0; }
+  44% { opacity: 1; }
+  62%, 100% { transform: translateX(110%); opacity: 0; }
+}
+
+.tournament-display-intro__content,
+.tournament-display-matchup__content {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.tournament-display-intro__logo {
+  max-height: min(54vh, 480px);
+  max-width: min(70vw, 820px);
+  object-fit: contain;
+}
+
+.tournament-display-intro__title {
+  font-size: clamp(3rem, 10vw, 10rem);
+  letter-spacing: .06em;
+  line-height: 1;
+  margin: 0;
+  max-width: 90vw;
+  hyphens: none;
+  overflow-wrap: normal;
+  text-transform: uppercase;
+  word-break: normal;
+}
+
+.tournament-display-matchup__content {
+  display: grid;
+  gap: clamp(18px, 4vh, 44px);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  padding: 48px;
+  width: min(95vw, 1800px);
+}
+
+.tournament-display-matchup__name {
+  color: var(--athlete-color);
+  font-size: clamp(3rem, 8.5vw, 10rem);
+  font-weight: 800;
+  line-height: .95;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-transform: uppercase;
+}
+
+.tournament-display-matchup__vs {
+  color: var(--text, #fff);
+  font-size: clamp(2.2rem, 5vw, 6rem);
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.spectator-background-picker {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  margin: 0;
+  padding: 12px;
+}
+
+.spectator-background-picker legend {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0 5px;
+}
+
+.spectator-background-picker__options {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+}
+
+.spectator-background-option {
+  align-items: stretch;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 7px;
+  text-align: center;
+}
+
+.spectator-background-option[aria-pressed='true'],
+.spectator-background-option--custom[data-selected='true'] {
+  background: var(--color-surface-selected);
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-focus) 28%, transparent);
+}
+
+.spectator-background-option__preview {
+  border-radius: 6px;
+  display: block;
+  height: 64px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.spectator-background-option__label {
+  color: var(--color-text-strong);
+  font-size: 0.76rem;
+  line-height: 1.15;
+}
+
+.spectator-background-animation {
+  align-items: center;
+  color: var(--color-text);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.spectator-background-animation input {
+  accent-color: var(--color-accent);
+  height: 18px;
+  margin: 0;
+  min-height: 18px;
+  padding: 0;
+  width: 18px;
+}
+
+.spectator-background-animation:has(input:disabled) {
+  color: var(--color-text-subtle);
+  cursor: default;
+}
+
+.spectator-background-preset {
+  align-items: center;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: auto minmax(150px, 1fr);
+  margin: 12px 0 0;
+}
+
+.spectator-background-preset select { margin: 0; min-height: 40px; padding: 8px 38px 8px 12px; }
+
+.spectator-background-option--custom { cursor: pointer; }
+.spectator-background-option__upload {
+  align-items: center;
+  cursor: pointer;
+  display: grid;
+  font-size: .72rem;
+  gap: 7px;
+  height: 100%;
+  justify-items: center;
+  line-height: 1.2;
+  text-decoration: underline;
+}
+.spectator-background-option__upload[data-has-image='true'] { text-decoration: none; }
+.spectator-background-option__upload input { display: none; }
+.spectator-background-upload__hint { display: block; margin-top: 10px; }
+.spectator-background-upload__error { color: var(--danger, #ff9a8f); }
+
+.spectator-background--preview {
+  position: absolute;
+}
+
+@media (max-width: 700px) {
+  .tournament-display-matchup__content {
+    gap: 22px;
+    grid-template-columns: 1fr;
+    padding: 28px;
+  }
+
+  .spectator-background-picker__options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spectator-background__glow,
+  .spectator-background__sweep { animation: none; }
+}

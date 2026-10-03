@@ -2,15 +2,18 @@ import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { useTranslation } from '../app/i18n';
 import { formatTime, parseTime } from '../domain/timer';
 import type { AthleteColor } from '../domain/rules';
-import type { TournamentDraft, TournamentState } from '../types/tournament';
+import { isAnimatableSpectatorBackground, normalizeSpectatorAnimationPreset, normalizeSpectatorBackground, normalizeSpectatorBackgroundImage, type TournamentDraft, type TournamentState } from '../types/tournament';
+import { useSettingsStore } from '../stores/settingsStore';
 import { NameInput } from './NameInput';
 import { TimeInput } from './TimeInput';
 import { Modal } from './Modal';
+import { SpectatorBackgroundPicker } from './SpectatorBackground';
 import { roundRobinRounds } from './TournamentBracket';
 import randomizeBracketIcon from '../assets/randomize-bracket-icon.png';
 
 type DragSource = { kind: 'pool'; athleteId: number } | { kind: 'slot'; index: number };
 type BracketAthlete = { id: number; name: string; duplicateIndex?: number };
+type TournamentBranding = Pick<TournamentDraft, 'logo' | 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>;
 const initialCompetitors = () => Array.from({ length: 4 }, () => '');
 const nextPowerOfTwo = (value: number) => 2 ** Math.ceil(Math.log2(Math.max(2, value)));
 const athleteColors: AthleteColor[] = ['red', 'blue', 'white'];
@@ -18,8 +21,14 @@ const dragSourceMime = 'application/x-tatami-athlete';
 
 export function TournamentSetup({ onBack, onStart, tournament }: { onBack: () => void; onStart: (draft: TournamentDraft, placements: (number | null)[]) => void; tournament?: TournamentState | null }) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<1 | 2 | 3>(tournament ? tournament.draft.format === 'round-robin' ? 2 : 3 : 1);
-  const [draft, setDraft] = useState<TournamentDraft>(() => tournament ? structuredClone(tournament.draft) : { name: '', matchDuration: 300000, competitors: initialCompetitors(), matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'olympic' });
+  const defaultSpectatorBackground = useSettingsStore(state => state.settings.spectatorBackground);
+  const [step, setStep] = useState<1 | 2 | 3>(tournament ? tournament.draft.format === 'single-elimination' ? 3 : 2 : 1);
+  const [draft, setDraft] = useState<TournamentDraft>(() => {
+    const spectatorBackground = normalizeSpectatorBackground(tournament?.draft.spectatorBackground ?? defaultSpectatorBackground);
+    return tournament ? { ...structuredClone(tournament.draft), logo: tournament.draft.logo ?? null, spectatorBackground, spectatorBackgroundImage: normalizeSpectatorBackgroundImage(tournament.draft.spectatorBackgroundImage), spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) && tournament.draft.spectatorBackgroundAnimated === true, spectatorAnimationPreset: normalizeSpectatorAnimationPreset(tournament.draft.spectatorAnimationPreset), spectatorTimerBackground: typeof tournament.draft.spectatorTimerBackground === 'boolean' ? tournament.draft.spectatorTimerBackground : true } : { name: '', logo: null, spectatorBackground, spectatorBackgroundImage: null, spectatorBackgroundAnimated: false, spectatorAnimationPreset: 'arena-dust', spectatorTimerBackground: true, matchDuration: 300000, competitors: initialCompetitors(), matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'olympic' };
+  });
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const [branding, setBranding] = useState<TournamentBranding | null>(null);
   const [time, setTime] = useState(() => formatTime(tournament?.draft.matchDuration ?? 300000));
   const [placements, setPlacements] = useState<(number | null)[]>(() => tournament ? [...tournament.seeds] : []);
   const [dragged, setDragged] = useState<DragSource | null>(null);
@@ -30,6 +39,7 @@ export function TournamentSetup({ onBack, onStart, tournament }: { onBack: () =>
   const [highlightEmptyAthletes, setHighlightEmptyAthletes] = useState(false);
   const [confirmIncompleteBracket, setConfirmIncompleteBracket] = useState(false);
   const isRoundRobin = draft.format === 'round-robin';
+  const isFreeTournament = draft.format === 'free';
   const duration = parseTime(time);
   const competitors = useMemo<BracketAthlete[]>(() => {
     const names = draft.competitors.map(name => name.trim());
@@ -98,13 +108,31 @@ export function TournamentSetup({ onBack, onStart, tournament }: { onBack: () =>
   };
 
   const toAthletes = () => {
-    if (!duration || !draft.name.trim()) return;
+    if (!duration) return;
     setDraft(current => ({ ...current, matchDuration: duration }));
     setStep(2);
   };
+  const uploadLogo = (file?: File) => {
+    setLogoError(null);
+    if (!file) return;
+    if (file.type !== 'image/png') {
+      setLogoError(t('Logo must be a PNG image.'));
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError(t('The logo must be 2 MB or smaller.'));
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      const logo = reader.result;
+      if (typeof logo === 'string') setBranding(current => current ? { ...current, logo } : current);
+    });
+    reader.readAsDataURL(file);
+  };
   const openBracket = () => {
     if (competitors.length < 2) return;
-    if (isRoundRobin) {
+    if (isRoundRobin || isFreeTournament) {
       onStart(draft, competitors.map(athlete => athlete.id));
       return;
     }
@@ -162,11 +190,30 @@ export function TournamentSetup({ onBack, onStart, tournament }: { onBack: () =>
     <div className="wizard-head">
       <button className="back-button" onClick={tournament || step === 1 ? onBack : () => setStep((step - 1) as 1 | 2)}><span aria-hidden="true">←</span> {t('Back')}</button>
       <div><div className="eyebrow">{t('TOURNAMENT')}</div><h1 id="tournament-heading">{t(step === 1 ? 'Tournament details' : step === 2 ? 'Tournament athletes' : 'Tournament bracket')}</h1></div>
-      <div className="wizard-steps" aria-label={t('Tournament progress')}><span className={step >= 1 ? 'active' : ''}>1</span><span className={step >= 2 ? 'active' : ''}>2</span><span className={step >= 3 ? 'active' : ''}>3</span></div>
+      <div className="wizard-steps" aria-label={t('Tournament progress')}><span className={step >= 1 ? 'active' : ''}>1</span><span className={step >= 2 ? 'active' : ''}>2</span>{!isFreeTournament && <span className={step >= 3 ? 'active' : ''}>3</span>}</div>
     </div>
 
     {step === 1 && <form className="wizard-card tournament-details" onSubmit={event => { event.preventDefault(); toAthletes(); }}>
-      <label>{t('Tournament name')}<input autoFocus required maxLength={100} value={draft.name} onChange={event => setDraft(current => ({ ...current, name: event.target.value }))} placeholder={t('Tournament name')}/></label>
+      <label>{t('Tournament name')}<input autoFocus maxLength={100} value={draft.name} onChange={event => setDraft(current => ({ ...current, name: event.target.value }))} placeholder={t('Tournament name')}/></label>
+      <button className="tournament-branding-button" type="button" onClick={() => { setLogoError(null); setBranding({ logo: draft.logo, spectatorBackground: draft.spectatorBackground, spectatorBackgroundImage: draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: draft.spectatorTimerBackground ?? true }); }}>{t('Spectator window appearance')}</button>
+      {branding && <Modal title="Spectator window appearance" close={() => { setLogoError(null); setBranding(null); }} closeOnBackdrop>
+        <div className="tournament-branding-dialog">
+          <label className="tournament-logo-control">
+            {t('Tournament logo (PNG)')}
+            <input type="file" accept="image/png" onChange={event => uploadLogo(event.currentTarget.files?.[0])}/>
+            <span className="tournament-logo-control__hint">{t('Upload a transparent PNG up to 2 MB.')}</span>
+            {logoError && <span className="tournament-logo-control__error" role="alert">{logoError}</span>}
+          </label>
+          {branding.logo && <div className="tournament-logo-preview">
+            <img src={branding.logo} alt={t('Tournament logo')}/>
+            <button type="button" onClick={() => { setBranding(current => current ? { ...current, logo: null } : current); setLogoError(null); }}>{t('Remove logo')}</button>
+          </div>}
+          <SpectatorBackgroundPicker value={branding.spectatorBackground} image={branding.spectatorBackgroundImage} animated={branding.spectatorBackgroundAnimated} preset={branding.spectatorAnimationPreset} timerBackground={branding.spectatorTimerBackground} onChange={spectatorBackground => { const update = { spectatorBackground, spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) ? branding.spectatorBackgroundAnimated : false }; setBranding(current => current ? { ...current, ...update } : current); setDraft(current => ({ ...current, ...update })); }} onImageChange={spectatorBackgroundImage => { const update = { spectatorBackgroundImage, ...(spectatorBackgroundImage ? { spectatorBackground: 'custom' as const } : {}) }; setBranding(current => current ? { ...current, ...update } : current); setDraft(current => ({ ...current, ...update })); }} onAnimatedChange={spectatorBackgroundAnimated => setBranding(current => current ? { ...current, spectatorBackgroundAnimated } : current)} onPresetChange={spectatorAnimationPreset => setBranding(current => current ? { ...current, spectatorAnimationPreset } : current)} onTimerBackgroundChange={spectatorTimerBackground => setBranding(current => current ? { ...current, spectatorTimerBackground } : current)}/>
+          <div className="dialog-actions tournament-branding-dialog__actions">
+            <button type="button" className="primary" onClick={() => { setDraft(current => ({ ...current, ...branding })); setLogoError(null); setBranding(null); }}>{t('Apply')}</button>
+          </div>
+        </div>
+      </Modal>}
       <label>{t('Time per match')}<TimeInput label={t('Time per match')} value={time} onChange={setTime}/></label>
       <fieldset className="tournament-colors">
         <legend>{t('Match colors')}</legend>
@@ -179,17 +226,18 @@ export function TournamentSetup({ onBack, onStart, tournament }: { onBack: () =>
       </fieldset>
       <fieldset className="tournament-format">
         <legend>{t('Tournament format')}</legend>
-        <label><input type="radio" name="tournament-format" checked={!isRoundRobin} onChange={() => setDraft(current => ({ ...current, format: 'single-elimination' }))}/><span>{t('Olympic system')}</span><small>{t('The loser is eliminated from the tournament.')}</small></label>
+        <label><input type="radio" name="tournament-format" checked={draft.format === 'single-elimination'} onChange={() => setDraft(current => ({ ...current, format: 'single-elimination' }))}/><span>{t('Olympic system')}</span><small>{t('The loser is eliminated from the tournament.')}</small></label>
         <label><input type="radio" name="tournament-format" checked={isRoundRobin} onChange={() => setDraft(current => ({ ...current, format: 'round-robin' }))}/><span>{t('Round robin')}</span><small>{t('Each athlete meets every other athlete once.')}</small></label>
+        <label><input type="radio" name="tournament-format" checked={isFreeTournament} onChange={() => setDraft(current => ({ ...current, format: 'free' }))}/><span>{t('Free tournament')}</span><small>{t('Create any match from the participant list and keep a live leaderboard.')}</small></label>
       </fieldset>
       {!duration && <p className="validation">{t('Enter a duration from 00:01 to 99:59.')}</p>}
-      <button className="primary wizard-next" disabled={!duration || !draft.name.trim()}>{t('Continue')}</button>
+      <button className="primary wizard-next" disabled={!duration}>{t('Continue')}</button>
     </form>}
 
     {step === 2 && <section className="wizard-card athlete-step">
       <p>{t('Add at least two athletes. Names are formatted consistently as you type.')}</p>
       <div className="tournament-athletes">{draft.competitors.map((name, index) => <label key={index}>{t('Athlete')} {index + 1}<NameInput aria-label={`${t('Athlete')} ${index + 1}`} aria-invalid={highlightEmptyAthletes && !name.trim()} className={highlightEmptyAthletes && !name.trim() ? 'athlete-name-missing' : undefined} maxLength={60} placeholder={t('Athlete name')} value={name} onChange={value => setDraft(current => ({ ...current, competitors: current.competitors.map((item, itemIndex) => itemIndex === index ? value : item) }))}/></label>)}</div>
-      <div className="wizard-actions"><div className="athlete-actions"><button type="button" onClick={() => setDraft(current => ({ ...current, competitors: [...current.competitors, ''] }))}>{t('Add athlete')}</button><button type="button" disabled={draft.competitors.length <= 2} onClick={() => setDraft(current => ({ ...current, competitors: current.competitors.slice(0, -1) }))}>{t('Remove athlete')}</button></div><button className="primary" disabled={competitors.length < 2} onClick={toBracket}>{t(isRoundRobin ? 'Start tournament' : 'Create bracket')}</button></div>
+      <div className="wizard-actions"><div className="athlete-actions"><button type="button" onClick={() => setDraft(current => ({ ...current, competitors: [...current.competitors, ''] }))}>{t('Add athlete')}</button><button type="button" disabled={draft.competitors.length <= 2} onClick={() => setDraft(current => ({ ...current, competitors: current.competitors.slice(0, -1) }))}>{t('Remove athlete')}</button></div><button className="primary" disabled={competitors.length < 2} onClick={toBracket}>{t(isRoundRobin || isFreeTournament ? 'Start tournament' : 'Create bracket')}</button></div>
     </section>}
 
     {confirmIncompleteBracket && <Modal title="Incomplete athletes" close={() => setConfirmIncompleteBracket(false)}><p>{t('Some athlete fields are empty. Create the bracket with the filled-in athletes only?')}</p><div className="dialog-actions"><button onClick={() => setConfirmIncompleteBracket(false)}>{t('Keep editing')}</button><button className="primary" onClick={() => { setConfirmIncompleteBracket(false); openBracket(); }}>{t('Create bracket anyway')}</button></div></Modal>}

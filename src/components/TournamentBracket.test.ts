@@ -3,7 +3,7 @@ import { roundRobinRounds, roundRobinStandings, tournamentRounds } from './Tourn
 import type { TournamentState } from '../types/tournament';
 
 const tournament = (results: Record<string, number> = {}): TournamentState => ({
-  draft: { name: 'Open', matchDuration: 300000, competitors: ['A', 'B', 'C', ''], matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'standard' },
+  draft: { name: 'Open', logo: null, spectatorBackground: 'arena-tatami', matchDuration: 300000, competitors: ['A', 'B', 'C', ''], matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'standard' },
   seeds: [0, 1, 2, null],
   results,
 });

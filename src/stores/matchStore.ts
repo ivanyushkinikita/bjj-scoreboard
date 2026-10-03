@@ -1,16 +1,17 @@
 import { create } from 'zustand';
-import type { MatchState, MatchEvent, ScoreField, Side, FinishReason } from '../types/match';
+import type { MatchState, MatchEvent, ScoreField, Side, FinishReason, TournamentPresentation } from '../types/match';
 import { changeScore } from '../domain/scoring';
 import { defaultRules, disqualificationLimit, matchWinner, penaltyAward, ruleMinutes, type Rules, type AthleteColor } from '../domain/rules';
 import { remainingTime } from '../domain/timer';
 import { titleCaseName } from '../domain/names';
+import { isAnimatableSpectatorBackground, normalizeSpectatorAnimationPreset, normalizeSpectatorBackground, normalizeSpectatorBackgroundImage } from '../types/tournament';
 
 export const blankMatch = (): MatchState => ({
   competitorA: { name: '', points: 0, advantages: 0, penalties: 0, color:'red' },
   competitorB: { name: '', points: 0, advantages: 0, penalties: 0, color:'blue' },
   rules: defaultRules(), showWinner: false, overtimeAttacker:null, overtime:null,
   initialDuration: 300000, remainingTime: 300000, endTimestamp: null,
-  status: 'setup', winner: null, result: null, confirmed: false, events: [], past: [], future: [],
+  status: 'setup', winner: null, result: null, tournamentPresentation: null, confirmed: false, events: [], past: [], future: [],
 });
 function event(s: MatchState, type: string, competitor: Side | null = null, value?: number, relatedEventId?: string): MatchEvent {
   return { id: crypto.randomUUID(), timestamp: Date.now(), matchTime: remainingTime(s), competitor, type, value, relatedEventId };
@@ -24,7 +25,7 @@ function provisional(s: MatchState): MatchState {
   return s.status === 'finished' && !s.confirmed ? { ...s, winner: matchWinner(s) } : s;
 }
 type Store = { match: MatchState; setup: (a: string, b: string, duration: number, rules?:Rules, colors?:[AthleteColor,AthleteColor]) => void; replace: (s: MatchState) => void; reset: () => void;
-  configureRules:(rules:Rules)=>void;
+  configureRules:(rules:Rules)=>void; setTournamentPresentation: (presentation: TournamentPresentation | null) => void;
   setColor:(side:Side,color:AthleteColor)=>void; presentWinner:(show:boolean)=>void; startOvertime:(attacker:Side|null,duration?:number)=>void;
   score: (side: Side, field: ScoreField, delta: number, label?: string) => void;
   undo: () => void; redo: () => void; toggleTimer: () => void; tick: () => void; setTime: (ms: number) => void; resetTimer: () => void;
@@ -33,6 +34,17 @@ type Store = { match: MatchState; setup: (a: string, b: string, duration: number
 export const useMatchStore = create<Store>((set, get) => ({
   match: blankMatch(), replace: (match) => {
     const normalized={...blankMatch(),...match,competitorA:{color:'red' as const,...match.competitorA},competitorB:{color:'blue' as const,...match.competitorB}};
+    const presentation = match.tournamentPresentation;
+    const spectatorBackground = normalizeSpectatorBackground(presentation?.spectatorBackground);
+    normalized.tournamentPresentation = presentation && typeof presentation === 'object' ? {
+      name: typeof presentation.name === 'string' ? presentation.name : '',
+      logo: typeof presentation.logo === 'string' ? presentation.logo : null,
+      spectatorBackground,
+      spectatorBackgroundImage: normalizeSpectatorBackgroundImage(presentation.spectatorBackgroundImage),
+      spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) && presentation.spectatorBackgroundAnimated === true,
+      spectatorAnimationPreset: normalizeSpectatorAnimationPreset(presentation.spectatorAnimationPreset),
+      spectatorTimerBackground: typeof presentation.spectatorTimerBackground === 'boolean' ? presentation.spectatorTimerBackground : true,
+    } : null;
     if(!normalized.overtime && normalized.overtimeAttacker){
       normalized.overtime={duration:match.initialDuration,regulationRemaining:0};
       normalized.initialDuration=match.events.find(e=>e.type==='Match created')?.matchTime || 300000;
@@ -40,6 +52,7 @@ export const useMatchStore = create<Store>((set, get) => ({
     set({match:normalized});
   }, reset: () => set({ match: blankMatch() }),
   configureRules:(rules)=>set(({match:s})=>!canConfigureRules(s)?{}:{match:{...s,rules:structuredClone(rules),initialDuration:ruleMinutes(rules)*60000,remainingTime:ruleMinutes(rules)*60000}}),
+  setTournamentPresentation: (presentation) => set(({match}) => { const spectatorBackground = presentation ? normalizeSpectatorBackground(presentation.spectatorBackground) : 'arena-tatami'; return { match: { ...match, tournamentPresentation: presentation ? { ...structuredClone(presentation), spectatorBackground, spectatorBackgroundImage: normalizeSpectatorBackgroundImage(presentation.spectatorBackgroundImage), spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) && presentation.spectatorBackgroundAnimated === true, spectatorAnimationPreset: normalizeSpectatorAnimationPreset(presentation.spectatorAnimationPreset), spectatorTimerBackground: typeof presentation.spectatorTimerBackground === 'boolean' ? presentation.spectatorTimerBackground : true } : null } }; }),
   setColor:(side,color)=>set(({match:s})=>s[key(side==='A'?'B':'A')].color===color?{}:{match:{...s,[key(side)]:{...s[key(side)],color}}}),
   presentWinner:(show)=>set(({match:s})=>({match:{...s,showWinner:show&&s.confirmed}})),
   startOvertime:(attacker,duration=60000)=>set(({match:s})=>{
@@ -48,7 +61,9 @@ export const useMatchStore = create<Store>((set, get) => ({
   }),
   setup: (a, b, duration, rules=defaultRules(), colors=['red','blue']) => {
     if (!a.trim() || !b.trim() || !Number.isFinite(duration) || duration <= 0) return;
+    const presentation = get().match.tournamentPresentation;
     const match = blankMatch();
+    match.tournamentPresentation = presentation;
     match.rules=structuredClone(rules); match.competitorA.color=colors[0]; match.competitorB.color=colors[1];
     match.competitorA.name = titleCaseName(a.trim()); match.competitorB.name = titleCaseName(b.trim());
     match.initialDuration = duration; match.remainingTime = duration; match.status = 'ready';
