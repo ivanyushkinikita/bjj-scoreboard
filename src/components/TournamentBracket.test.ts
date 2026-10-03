@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { tournamentRounds } from './TournamentBracket';
+import { roundRobinRounds, roundRobinStandings, tournamentRounds } from './TournamentBracket';
 import type { TournamentState } from '../types/tournament';
 
 const tournament = (results: Record<string, number> = {}): TournamentState => ({
@@ -28,4 +28,20 @@ it('spreads first-round byes so no athlete skips straight to the final', () => {
     expect.objectContaining({ athleteA: 3, athleteB: 4, winnerId: null, automatic: false }),
   ]));
   expect(rounds.at(-1)?.[0]).toMatchObject({ winnerId: null, automatic: false });
+});
+
+it('creates a round-robin schedule where each athlete meets every other athlete once', () => {
+  const roundRobin = { ...tournament(), draft: { ...tournament().draft, format: 'round-robin' as const }, seeds: [0, 1, 2, 3] };
+  const rounds = roundRobinRounds(roundRobin);
+  const pairs = rounds.flat().map(match => [match.athleteA, match.athleteB].sort().join(':'));
+
+  expect(rounds).toHaveLength(3);
+  expect(pairs).toHaveLength(6);
+  expect([...new Set(pairs)]).toHaveLength(6);
+});
+
+it('calculates round-robin standings from completed matches', () => {
+  const roundRobin = { ...tournament({ 'round-robin-0-match-0': 0, 'round-robin-0-match-1': 1 }), draft: { ...tournament().draft, format: 'round-robin' as const }, seeds: [0, 1, 2, 3] };
+
+  expect(roundRobinStandings(roundRobin)[0]).toMatchObject({ athleteId: 0, played: 1, wins: 1, losses: 0 });
 });

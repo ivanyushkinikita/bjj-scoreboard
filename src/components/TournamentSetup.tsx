@@ -1,11 +1,12 @@
-import { useMemo, useState, type DragEvent } from 'react';
+import { useMemo, useRef, useState, type DragEvent } from 'react';
 import { useTranslation } from '../app/i18n';
 import { formatTime, parseTime } from '../domain/timer';
 import type { AthleteColor } from '../domain/rules';
-import type { TournamentDraft } from '../types/tournament';
+import type { TournamentDraft, TournamentState } from '../types/tournament';
 import { NameInput } from './NameInput';
 import { TimeInput } from './TimeInput';
 import { Modal } from './Modal';
+import { roundRobinRounds } from './TournamentBracket';
 import randomizeBracketIcon from '../assets/randomize-bracket-icon.png';
 
 type DragSource = { kind: 'pool'; athleteId: number } | { kind: 'slot'; index: number };
@@ -15,18 +16,20 @@ const nextPowerOfTwo = (value: number) => 2 ** Math.ceil(Math.log2(Math.max(2, v
 const athleteColors: AthleteColor[] = ['red', 'blue', 'white'];
 const dragSourceMime = 'application/x-tatami-athlete';
 
-export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onStart: (draft: TournamentDraft, placements: (number | null)[]) => void }) {
+export function TournamentSetup({ onBack, onStart, tournament }: { onBack: () => void; onStart: (draft: TournamentDraft, placements: (number | null)[]) => void; tournament?: TournamentState | null }) {
   const { t } = useTranslation();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [draft, setDraft] = useState<TournamentDraft>({ name: '', matchDuration: 300000, competitors: initialCompetitors(), matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'olympic' });
-  const [time, setTime] = useState(formatTime(300000));
-  const [placements, setPlacements] = useState<(number | null)[]>([]);
+  const [step, setStep] = useState<1 | 2 | 3>(tournament ? tournament.draft.format === 'round-robin' ? 2 : 3 : 1);
+  const [draft, setDraft] = useState<TournamentDraft>(() => tournament ? structuredClone(tournament.draft) : { name: '', matchDuration: 300000, competitors: initialCompetitors(), matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'olympic' });
+  const [time, setTime] = useState(() => formatTime(tournament?.draft.matchDuration ?? 300000));
+  const [placements, setPlacements] = useState<(number | null)[]>(() => tournament ? [...tournament.seeds] : []);
   const [dragged, setDragged] = useState<DragSource | null>(null);
+  const draggedRef = useRef<DragSource | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [overPool, setOverPool] = useState(false);
   const [allowRepeatedAthletes, setAllowRepeatedAthletes] = useState(false);
   const [highlightEmptyAthletes, setHighlightEmptyAthletes] = useState(false);
   const [confirmIncompleteBracket, setConfirmIncompleteBracket] = useState(false);
+  const isRoundRobin = draft.format === 'round-robin';
   const duration = parseTime(time);
   const competitors = useMemo<BracketAthlete[]>(() => {
     const names = draft.competitors.map(name => name.trim());
@@ -41,6 +44,18 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     });
   }, [draft.competitors]);
   const athletesById = useMemo(() => new Map(competitors.map(athlete => [athlete.id, athlete])), [competitors]);
+  const lockedSlotIndexes = useMemo(() => {
+    if (!tournament) return new Set<number>();
+    if (tournament.draft.format === 'round-robin') {
+      const lockedAthletes = new Set(roundRobinRounds(tournament).flat().filter(match => match.winnerId !== null).flatMap(match => [match.athleteA, match.athleteB]));
+      return new Set(placements.flatMap((athleteId, index) => athleteId !== null && lockedAthletes.has(athleteId) ? [index] : []));
+    }
+    return new Set(Object.keys(tournament.results).flatMap(matchId => {
+      const match = /^round-0-match-(\d+)$/.exec(matchId);
+      return match ? [Number(match[1]) * 2, Number(match[1]) * 2 + 1] : [];
+    }));
+  }, [placements, tournament]);
+  const lockedAthleteIds = useMemo(() => new Set([...lockedSlotIndexes].map(index => placements[index]).filter((id): id is number => id !== null)), [lockedSlotIndexes, placements]);
   const requiredBracketSize = nextPowerOfTwo(competitors.length);
   const bracketSize = Math.max(requiredBracketSize, placements.length);
   const firstRoundMatches = Array.from({ length: bracketSize / 2 }, (_, index) => [index * 2, index * 2 + 1] as const);
@@ -51,6 +66,12 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     if (matchColors[1 - index] === color) matchColors[1 - index] = previous;
     return { ...current, matchColors };
   });
+  const clearDrag = () => {
+    draggedRef.current = null;
+    setDragged(null);
+    setDropIndex(null);
+    setOverPool(false);
+  };
   const beginDrag = (source: DragSource, event?: DragEvent<HTMLElement>) => {
     if (event) {
       const serialized = JSON.stringify(source);
@@ -58,6 +79,7 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
       event.dataTransfer.setData(dragSourceMime, serialized);
       event.dataTransfer.setData('text/plain', serialized);
     }
+    draggedRef.current = source;
     setDragged(source);
     setDropIndex(null);
     setOverPool(false);
@@ -82,6 +104,10 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
   };
   const openBracket = () => {
     if (competitors.length < 2) return;
+    if (isRoundRobin) {
+      onStart(draft, competitors.map(athlete => athlete.id));
+      return;
+    }
     setPlacements(current => current.length >= requiredBracketSize ? current : Array.from({ length: requiredBracketSize }, (_, index) => current[index] ?? null));
     setStep(3);
   };
@@ -94,8 +120,9 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     }
     openBracket();
   };
-  const place = (index: number, source = dragged) => {
+  const place = (index: number, source = draggedRef.current) => {
     if (!source) return;
+    if (lockedSlotIndexes.has(index) || (source.kind === 'slot' && lockedSlotIndexes.has(source.index))) return;
     setPlacements(current => {
       const next = [...current];
       const incoming = source.kind === 'pool' ? source.athleteId : next[source.index];
@@ -104,36 +131,36 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
       next[index] = incoming;
       return next;
     });
-    setDragged(null);
-    setDropIndex(null);
-    setOverPool(false);
+    clearDrag();
   };
-  const returnToPool = (source = dragged) => {
+  const returnToPool = (source = draggedRef.current) => {
     if (!source || source.kind !== 'slot') return;
+    if (lockedSlotIndexes.has(source.index)) return;
     setPlacements(current => current.map((athleteId, index) => index === source.index ? null : athleteId));
-    setDragged(null);
-    setDropIndex(null);
-    setOverPool(false);
+    clearDrag();
   };
   const randomize = () => {
-    const shuffled = competitors.map(athlete => athlete.id);
+    const shuffled = competitors.filter(athlete => !lockedAthleteIds.has(athlete.id)).map(athlete => athlete.id);
     for (let index = shuffled.length - 1; index > 0; index -= 1) {
       const target = Math.floor(Math.random() * (index + 1));
       [shuffled[index], shuffled[target]] = [shuffled[target], shuffled[index]];
     }
-    setPlacements(Array.from({ length: bracketSize }, (_, index) => shuffled[index] ?? null));
+    setPlacements(current => {
+      const next = Array.from({ length: bracketSize }, () => null as number | null);
+      [...lockedSlotIndexes].forEach(index => { next[index] = current[index] ?? null; });
+      Array.from({ length: bracketSize }, (_, index) => index).filter(index => !lockedSlotIndexes.has(index)).forEach((index, shuffledIndex) => { next[index] = shuffled[shuffledIndex] ?? null; });
+      return next;
+    });
   };
   const resetBracket = () => {
-    setPlacements(Array.from({ length: bracketSize }, () => null));
-    setDragged(null);
-    setDropIndex(null);
-    setOverPool(false);
+    setPlacements(current => Array.from({ length: bracketSize }, (_, index) => lockedSlotIndexes.has(index) ? current[index] ?? null : null));
+    clearDrag();
   };
   const addMatch = () => setPlacements(current => [...current, null, null]);
 
   return <main className={`tournament-setup ${step === 3 ? 'bracket-editor' : ''}`} aria-labelledby="tournament-heading">
     <div className="wizard-head">
-      <button className="back-button" onClick={step === 1 ? onBack : () => setStep((step - 1) as 1 | 2)}><span aria-hidden="true">←</span> {t('Back')}</button>
+      <button className="back-button" onClick={tournament || step === 1 ? onBack : () => setStep((step - 1) as 1 | 2)}><span aria-hidden="true">←</span> {t('Back')}</button>
       <div><div className="eyebrow">{t('TOURNAMENT')}</div><h1 id="tournament-heading">{t(step === 1 ? 'Tournament details' : step === 2 ? 'Tournament athletes' : 'Tournament bracket')}</h1></div>
       <div className="wizard-steps" aria-label={t('Tournament progress')}><span className={step >= 1 ? 'active' : ''}>1</span><span className={step >= 2 ? 'active' : ''}>2</span><span className={step >= 3 ? 'active' : ''}>3</span></div>
     </div>
@@ -150,6 +177,11 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
           </select>
         </label>)}
       </fieldset>
+      <fieldset className="tournament-format">
+        <legend>{t('Tournament format')}</legend>
+        <label><input type="radio" name="tournament-format" checked={!isRoundRobin} onChange={() => setDraft(current => ({ ...current, format: 'single-elimination' }))}/><span>{t('Olympic system')}</span><small>{t('The loser is eliminated from the tournament.')}</small></label>
+        <label><input type="radio" name="tournament-format" checked={isRoundRobin} onChange={() => setDraft(current => ({ ...current, format: 'round-robin' }))}/><span>{t('Round robin')}</span><small>{t('Each athlete meets every other athlete once.')}</small></label>
+      </fieldset>
       {!duration && <p className="validation">{t('Enter a duration from 00:01 to 99:59.')}</p>}
       <button className="primary wizard-next" disabled={!duration || !draft.name.trim()}>{t('Continue')} <span aria-hidden="true">→</span></button>
     </form>}
@@ -157,33 +189,34 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     {step === 2 && <section className="wizard-card athlete-step">
       <p>{t('Add at least two athletes. Names are formatted consistently as you type.')}</p>
       <div className="tournament-athletes">{draft.competitors.map((name, index) => <label key={index}>{t('Athlete')} {index + 1}<NameInput aria-label={`${t('Athlete')} ${index + 1}`} aria-invalid={highlightEmptyAthletes && !name.trim()} className={highlightEmptyAthletes && !name.trim() ? 'athlete-name-missing' : undefined} maxLength={60} placeholder={t('Athlete name')} value={name} onChange={value => setDraft(current => ({ ...current, competitors: current.competitors.map((item, itemIndex) => itemIndex === index ? value : item) }))}/></label>)}</div>
-      <div className="wizard-actions"><div className="athlete-actions"><button type="button" onClick={() => setDraft(current => ({ ...current, competitors: [...current.competitors, ''] }))}>{t('Add athlete')}</button><button type="button" disabled={draft.competitors.length <= 2} onClick={() => setDraft(current => ({ ...current, competitors: current.competitors.slice(0, -1) }))}>{t('Remove athlete')}</button></div><button className="primary" disabled={competitors.length < 2} onClick={toBracket}>{t('Create bracket')} <span aria-hidden="true">→</span></button></div>
+      <div className="wizard-actions"><div className="athlete-actions"><button type="button" onClick={() => setDraft(current => ({ ...current, competitors: [...current.competitors, ''] }))}>{t('Add athlete')}</button><button type="button" disabled={draft.competitors.length <= 2} onClick={() => setDraft(current => ({ ...current, competitors: current.competitors.slice(0, -1) }))}>{t('Remove athlete')}</button></div><button className="primary" disabled={competitors.length < 2} onClick={toBracket}>{t(isRoundRobin ? 'Start tournament' : 'Create bracket')} <span aria-hidden="true">→</span></button></div>
     </section>}
 
     {confirmIncompleteBracket && <Modal title="Incomplete athletes" close={() => setConfirmIncompleteBracket(false)}><p>{t('Some athlete fields are empty. Create the bracket with the filled-in athletes only?')}</p><div className="dialog-actions"><button onClick={() => setConfirmIncompleteBracket(false)}>{t('Keep editing')}</button><button className="primary" onClick={() => { setConfirmIncompleteBracket(false); openBracket(); }}>{t('Create bracket anyway')}</button></div></Modal>}
 
     {step === 3 && <section className="bracket-stage">
       <div className="bracket-toolbar"><div><strong>{draft.name}</strong><small>{formatTime(draft.matchDuration)} · {competitors.length} {t('athletes')}</small></div><div className="bracket-actions"><button className="dice-button" onClick={randomize} aria-label={t('Randomize bracket')} title={t('Randomize bracket')}><img src={randomizeBracketIcon} alt="" /></button><button className="reset-bracket" onClick={resetBracket}>{t('Reset bracket')}</button></div></div>
-      <p className="bracket-help">{t('Drag athletes into the first-round slots. Random distribution can still be adjusted manually.')}</p>
+      <p className="bracket-help">{t(isRoundRobin ? 'Select the athletes for the round-robin schedule. Each pair will meet once.' : 'Drag athletes into the first-round slots, or click an athlete and then a slot. Random distribution can still be adjusted manually.')}{tournament && <><br/>{t('Completed matches are locked. Unplayed matches can still be edited.')}</>}</p>
       <div className="bracket-layout">
-        <aside className={`athlete-pool ${overPool ? 'drop-target' : ''}`} aria-label={t('Athlete pool')} onDragEnter={() => dragged?.kind === 'slot' && setOverPool(true)} onDragLeave={event => { if (event.currentTarget === event.target) setOverPool(false); }} onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={event => { event.preventDefault(); returnToPool(dragged ?? sourceFromEvent(event)); }}>
+        <aside className={`athlete-pool ${overPool ? 'drop-target' : ''}`} aria-label={t('Athlete pool')} onDragEnter={() => draggedRef.current?.kind === 'slot' && setOverPool(true)} onDragLeave={event => { if (event.currentTarget === event.target) setOverPool(false); }} onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={event => { event.preventDefault(); returnToPool(draggedRef.current ?? sourceFromEvent(event)); }}>
           <h2>{t('Athletes')}</h2><label className="repeat-athletes"><input type="checkbox" checked={allowRepeatedAthletes} onChange={event => setAllowRepeatedAthletes(event.target.checked)}/><span>{t('Multi-select athlete')}</span></label>
-          {(allowRepeatedAthletes ? competitors : competitors.filter(athlete => !placements.includes(athlete.id))).map(athlete => <button draggable key={athlete.id} className={`pool-athlete ${dragged?.kind === 'pool' && dragged.athleteId === athlete.id ? 'drag-selected' : ''}`} onClick={() => beginDrag({ kind: 'pool', athleteId: athlete.id })} onDragStart={event => beginDrag({ kind: 'pool', athleteId: athlete.id }, event)} onDragEnd={() => { setDragged(null); setDropIndex(null); setOverPool(false); }}>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</button>)}
+          {(allowRepeatedAthletes ? competitors : competitors.filter(athlete => !placements.includes(athlete.id))).filter(athlete => !lockedAthleteIds.has(athlete.id)).map(athlete => <button draggable key={athlete.id} className={`pool-athlete ${dragged?.kind === 'pool' && dragged.athleteId === athlete.id ? 'drag-selected' : ''}`} onClick={() => beginDrag({ kind: 'pool', athleteId: athlete.id })} onDragStart={event => beginDrag({ kind: 'pool', athleteId: athlete.id }, event)} onDragEnd={clearDrag}>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</button>)}
         </aside>
         <div className="bracket-round first-round">
-          <div className="round-title"><h2>{t('Round 1')}</h2><button type="button" className="add-bracket-match" onClick={addMatch}>{t('Add match')}</button></div>
-          <div className="bracket-pairs">{firstRoundMatches.map(([firstIndex, secondIndex], matchIndex) => <section className="bracket-match" key={firstIndex} aria-label={`${t('Round 1')} ${matchIndex + 1}`}>
-            <span className="bracket-match-label">{t('Match')} {matchIndex + 1}</span>
+          <div className="round-title"><h2>{t(isRoundRobin ? 'Round-robin athletes' : 'Round 1')}</h2>{!isRoundRobin && <button type="button" className="add-bracket-match" onClick={addMatch}>{t('Add match')}</button>}</div>
+          <div className="bracket-pairs">{firstRoundMatches.map(([firstIndex, secondIndex], matchIndex) => <section className="bracket-match" key={firstIndex} aria-label={`${t(isRoundRobin ? 'Round-robin athletes' : 'Round 1')} ${matchIndex + 1}`}>
+            <span className="bracket-match-label">{isRoundRobin ? `${t('Athlete')} ${firstIndex + 1}` : `${t('Match')} ${matchIndex + 1}`}</span>
             {[firstIndex, secondIndex].map(index => {
               const athlete = athletesById.get(placements[index] ?? -1);
               const color = draft.matchColors[index % 2];
-              const isDropTarget = dropIndex === index && !!dragged;
-              return <button draggable={!!athlete} key={index} className={`bracket-slot ${athlete ? 'filled' : ''} slot-${color} ${isDropTarget ? `drop-${color}` : ''} ${dragged?.kind === 'slot' && dragged.index === index ? 'drag-selected' : ''}`} onClick={() => { if (dragged) place(index); else if (athlete) beginDrag({ kind: 'slot', index }); }} onDragStart={event => athlete && beginDrag({ kind: 'slot', index }, event)} onDragEnd={() => { setDragged(null); setDropIndex(null); setOverPool(false); }} onDragEnter={() => dragged && setDropIndex(index)} onDragLeave={event => { if (event.currentTarget === event.target) setDropIndex(null); }} onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={event => { event.preventDefault(); place(index, dragged ?? sourceFromEvent(event)); }}>{athlete ? <>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</> : <span>{t('Drop athlete here')}</span>}</button>;
+              const locked = lockedSlotIndexes.has(index);
+              const isDropTarget = !locked && dropIndex === index && !!draggedRef.current;
+              return <button draggable={!!athlete && !locked} key={index} aria-disabled={locked} className={`bracket-slot ${athlete ? 'filled' : ''} ${locked ? 'locked' : ''} slot-${color} ${isDropTarget ? `drop-${color}` : ''} ${dragged?.kind === 'slot' && dragged.index === index ? 'drag-selected' : ''}`} onClick={() => { if (locked) return; if (draggedRef.current) place(index); else if (athlete) beginDrag({ kind: 'slot', index }); }} onDragStart={event => athlete && !locked && beginDrag({ kind: 'slot', index }, event)} onDragEnd={clearDrag} onDragEnter={event => { event.preventDefault(); if (!locked && draggedRef.current) setDropIndex(index); }} onDragLeave={event => { if (event.currentTarget === event.target) setDropIndex(null); }} onDragOver={event => { if (!locked) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; } }} onDrop={event => { event.preventDefault(); if (!locked) place(index, draggedRef.current ?? sourceFromEvent(event)); }}>{athlete ? <>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</> : <span>{t('Drop athlete here')}</span>}</button>;
             })}
           </section>)}</div>
         </div>
       </div>
-      <button className="primary start-tournament" onClick={() => onStart(draft, placements)}>{t('Start tournament')}</button>
+      <button className="primary start-tournament" onClick={() => onStart(draft, placements)}>{t(tournament ? 'Save bracket' : 'Start tournament')}</button>
     </section>}
   </main>;
 }

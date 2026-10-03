@@ -1,6 +1,6 @@
 import type { AthleteColor, Rules } from '../domain/rules';
 export type Side = 'A' | 'B';
-export type FinishReason = 'time' | 'submission' | 'decision' | 'disqualification' | 'technical';
+export type FinishReason = 'time' | 'submission' | 'decision' | 'disqualification' | 'technical' | 'draw';
 export type ScoreField = 'points' | 'advantages' | 'penalties';
 export type Competitor = { name: string; points: number; advantages: number; penalties: number; color?: AthleteColor };
 export type MatchStatus = 'setup' | 'ready' | 'running' | 'paused' | 'finished';

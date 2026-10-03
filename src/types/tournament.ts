@@ -20,6 +20,8 @@ export type TournamentState = {
   draft: TournamentDraft;
   seeds: (number | null)[];
   results: Record<string, number>;
+  roundRobinMatchOrder?: string[];
+  roundRobinView?: 'list' | 'table';
 };
 
 export type TournamentMatch = {

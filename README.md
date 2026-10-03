@@ -1,139 +1,51 @@
-# Tatami — BJJ Scoreboard
+# Tatami Scoreboard
 
-Автономное приложение судьи на Tauri 2, React, TypeScript, Vite и Zustand. Русский интерфейс по умолчанию с переключением на English. Для спортсменов выбираются разные цвета: красный, синий, белый. Без backend, CDN и внешних шрифтов; весь runtime работает локально.
+Tatami Scoreboard is an offline Windows application for refereeing Brazilian jiu-jitsu and grappling matches. It is built with Tauri, React, TypeScript, and Zustand. No account, server, CDN, or internet connection is required while it is in use.
 
-Готовый EXE: `src-tauri/target/release/tatami-scoreboard.exe`. Windows installer со встроенным offline-установщиком WebView2: `src-tauri/target/release/bundle/nsis/Tatami Scoreboard_1.0.1_x64-setup.exe`. Для отдельного EXE требуется установленный WebView2; installer устанавливает его при необходимости.
+## Highlights
 
-В пункте **Настройки** можно выбрать русский/английский язык и независимо включить звуки старта и окончания. Настройки сохраняются между запусками; язык синхронизируется со зрительским окном. Звук старта звучит при первом запуске и после сброса таймера, продолжение после паузы не сопровождается повторным сигналом. Для проверки звуков есть отдельные кнопки.
+- Single-match mode with configurable athletes, colours, rules, timer, scoring, overtime, undo/redo, and result confirmation.
+- Tournament mode with single-elimination and round-robin formats.
+- Manual and random bracket placement, automatic byes, match progression, standings, schedule list, and a round-robin matrix.
+- Optional spectator display window synchronized with the referee window.
+- Russian and English interface languages; the Windows installer asks for its language before installation.
+- Local-only match persistence and sounds.
 
-Старт — один высокий удар гонга, окончание — два более низких удара. Оригинальные WAV генерируются локально скриптом `scripts/generate-assets.mjs`. После подтверждения победы оба окна показывают анимацию и имя атлета во весь экран. В режиме одной схватки кнопка на экране победителя открывает создание следующей схватки; «Показать победителя» повторяет заставку до перехода к следующей схватке.
+## Install on Windows
 
-## Режимы работы и турнир
+Download the latest `Tatami Scoreboard_<version>_x64-setup.exe` from the [Releases page](https://github.com/ivanyushkinikita/bjj-scoreboard/releases), run it, and choose English or Russian in the installer.
 
-Стартовый экран — выбор режима, а не форма схватки. Это намеренное разделение: оператор сначала выбирает контекст работы, а затем настраивает конкретный режим.
+The installer contains the offline WebView2 installer required by the application. It is not code-signed, so Windows SmartScreen may show a warning. Download only from the official Releases page; use **More info → Run anyway** only after verifying the source.
 
-- **Одна схватка.** Использует прежнюю форму настройки, правила, цвета, сохранение и синхронизацию табло. Кнопка «Назад» возвращает к выбору режима. Новая или завершённая схватка открывает форму следующей схватки, а не экран выбора режима.
-- **Турнир.** Пока это мастер подготовки из трёх экранов: название и длительность одной схватки → список спортсменов → сетка. Турнир ещё не запускает схватки и не записывает результаты.
-- **Имена спортсменов.** Все поля имён используют общий компонент `NameInput` и одинаковое правило: каждое слово приводится к Title Case. Это относится к одиночной схватке, турниру и редактированию имени во время схватки.
-- **Сетка.** Реализована сетка на выбывание с числом мест, округлённым до ближайшей большей степени двойки. Спортсмены перетаскиваются из пула в слоты первого раунда; занятые слоты можно менять местами. Кнопка с шестигранным кубиком делает случайную расстановку и не блокирует последующее ручное редактирование. Реализация использует встроенный HTML drag-and-drop, без сетевой зависимости и сторонней библиотеки.
-- **Задел на будущее.** Тип `TournamentDraft` уже содержит `format` (`single-elimination` / `round-robin`) и `ruleset` (`standard` / `olympic`). В этом релизе доступны только подготовка сетки на выбывание и стандартные правила; круговая система, олимпийские правила, запуск турнира и учёт результатов намеренно не реализованы.
+## Quick start
 
-Данные текущей схватки по-прежнему сохраняются в существующем формате `tatami.match.v1`; добавление режимов не меняет его схему и не ломает восстановление старых сохранений.
+1. Select **Single match** or **Tournament** on the home screen.
+2. In single-match mode, enter the athletes, choose their colours, set a `MM:SS` duration, and start the match.
+3. In a single-elimination tournament, place athletes in the first round (or use random placement), then start the tournament. A competitor without an opponent receives a bye into the next round.
+4. In a round-robin tournament, add the athletes and start the tournament directly. Use the list or table view to select a match.
+5. Confirm each result to advance the bracket or update the standings.
 
-## Наборы правил
+For a concise Russian referee guide, see [MANUAL.md](MANUAL.md).
 
-В настройках выбираются БЖЖ / IBJJF (по умолчанию), Греплинг / UWW или свои правила, возрастная категория и пояс. В центральной форме подготовки доступны спортсмены, цвета и время. Переключение набора в готовой схватке разрешено до первого старта и начислений. Редактор своих правил сохраняет до 30 действий с целыми баллами 1–99; сохранённая схватка содержит отдельный снимок правил.
+## Development
 
-Пресеты проверены 13.09.2026: [IBJJF Books & Videos](https://ibjjf.com/books-videos), Rule Book v6.1, июнь 2024 (страница по-прежнему подписана v6.0); [UWW Grappling Rules, май 2025](https://cdn.uww.org/2025-05/grappling_rules_2025.pdf). Источники и краткая справка доступны по кнопке «Правила».
-
-IBJJF: время по возрасту/поясу, преимущества и последовательность штрафов, включая детей 4–15 лет. UWW: отдельные действия на 1–4 балла, приоритет стоимости действий при ничьей, предупреждения, сигнал при разнице 15 баллов и минутный овертайм только до сабмишна. Штраф и связанное начисление сопернику отменяются одной операцией Undo. При достижении порога дисквалификации или технической победы требуется решение судьи; таймер сам не прерывает текущий приём. В овертайме судья выбирает атакующего, технические баллы отключены, при истечении времени предварительно побеждает защищающийся.
-
-Табло учитывает счёт, а не распознаёт действия на ковре. Законность приёмов, фиксацию позиции, пассивность и начальную позицию овертайма определяет судья. Справка отмечает возрастные группы запрещённых действий IBJJF и различия Gi/No-Gi; полного автоматического контроля запрещённых приёмов нет. В статье 24 UWW для U17 использовано прямое указание 5 минут: последующая общая фраза в PDF противоречиво упоминает 4 минуты; время допускает ручную коррекцию под регламент турнира.
-
-## Запуск
-
-Для Windows 10/11 нужны Node.js 22, Rust stable MSVC, Microsoft C++ Build Tools и Windows SDK. После установки Rust откройте новый терминал, чтобы обновился PATH.
+Requirements: Node.js 22, Rust stable with the MSVC toolchain, Microsoft C++ Build Tools, and Windows SDK.
 
 ```bash
 npm install
 npm run tauri dev
 ```
 
-Frontend для разработки и браузерной проверки:
+Useful checks:
 
 ```bash
-npm run dev
-```
-
-Откройте http://127.0.0.1:1420. В браузере display — отдельное popup-окно; необходимо разрешить всплывающие окна. Выбор монитора поддерживается в Tauri.
-
-## Production
-
-```bash
-npm run typecheck
 npm test
-npm run test:e2e
 npm run build
 npm run tauri build
 ```
 
-`npm run build` создаёт frontend в `dist/`. `npm run tauri build` создаёт Windows NSIS installer в `src-tauri/target/release/bundle/nsis/`. В installer включается offline WebView2 installer: интернет нужен при первоначальной сборке для загрузки зависимостей, но не при установке готового пакета и использовании приложения. Пакет не подписан сертификатом.
+The Windows NSIS installer is produced in `src-tauri/target/release/bundle/nsis/`.
 
-Playwright использует установленный Microsoft Edge. На других ОС можно поменять `channel` в `playwright.config.ts` и установить соответствующий браузер. Для macOS/Linux измените `bundle.targets` на подходящие платформе форматы; бизнес-логика и интеграции не содержат Win32-зависимостей.
+## License
 
-## Структура
-
-```text
-src/
-  app/App.tsx                  интерфейс, диалоги, lifecycle и shortcuts
-  app/i18n.ts                  русская локаль, перевод интерфейса и истории
-  components/
-    MatchSetup.tsx             настройка спортсменов и длительности
-    ModeSelection.tsx          выбор «Одна схватка» / «Турнир»
-    TournamentSetup.tsx        мастер подготовки турнира и сетка
-    NameInput.tsx              единое форматирование имён спортсменов
-    CompetitorPanel.tsx        счёт, преимущества, штрафы, BJJ actions
-    EventLog.tsx               журнал с временем и timestamp
-    Modal.tsx                  модальный dialog с удержанием фокуса
-  domain/
-    scoring.ts                 чистая логика начислений
-    winner.ts                  приоритет points / advantages / penalties
-    timer.ts                   расчёт по timestamp, ввод и формат времени
-    match.test.ts              unit-тесты
-  stores/matchStore.ts         единственное авторитетное состояние матча
-  stores/settingsStore.ts      язык и переключатели звуков
-  services/
-    displayWindow.ts           Tauri events, окна, fullscreen, мониторы
-    persistence.ts             версионированное localStorage
-    audio.ts                   локальный звуковой сигнал
-  types/match.ts               типы предметной области
-  types/tournament.ts          задел форматов и правил турнира
-  styles.css                   адаптивный интерфейс
-public/sounds/horn.wav         локальный сигнал окончания времени
-public/sounds/start.wav        локальный сигнал старта
-src-tauri/
-  src/lib.rs                   минимальный запуск Tauri
-  src/main.rs                  desktop entrypoint
-  capabilities/               отдельные разрешения control / display
-  tauri.conf.json              окна, CSP, NSIS, offline WebView2
-e2e/match.spec.ts              браузерные интеграционные сценарии
-e2e/settings.spec.ts           русский язык, звуки и горячие клавиши
-scripts/generate-assets.mjs    воспроизводимая генерация WAV и ICO
-scripts/native-smoke.mjs       native-проверки debug/release через WebView2
-```
-
-## Архитектура и поведение
-
-- **Scoring domain logic находится в `src/domain/scoring.ts`.** Чистые функции возвращают нового спортсмена и не зависят от React, Zustand или Tauri. `winner.ts` сравнивает базовый счёт БЖЖ; `rules.ts` содержит возрастные пресеты, штрафы, дисквалификации, UWW tie-break и овертайм.
-- Zustand хранит спортсменов `competitorA/competitorB`, их цвета, снимок правил, статус, начальное и оставшееся время в миллисекундах, `endTimestamp`, результат, показ победителя, журнал и стеки Undo/Redo.
-- Только Control Window изменяет матч, сохраняет его и завершает таймер. Display Window получает снимки через Tauri events. Сначала устанавливается listener, затем запрашивается актуальный снимок; повторное открытие окна тоже синхронизируется. В браузере используется BroadcastChannel.
-- Таймер вычисляется как `max(0, endTimestamp - Date.now())`. Интервал 80 мс лишь обновляет изображение и проверяет завершение. Задержки event loop не накапливают ошибку; системное изменение часов влияет на timestamp.
-- После Setup матч находится в `ready`. Нажмите Start Timer / Space. Клик по таймеру открывает подтверждаемый ввод MM:SS. Коррекция сохраняет режим running/paused. Reset Timer с подтверждением останавливает часы и возвращает исходную длительность.
-- Начисления доступны до подтверждения результата, в том числе для коррекции после истечения времени. Undo/Redo отменяет только начисления, без отката времени или имён. Операции Undo/Redo добавляются в журнал со ссылкой на исходное событие. Новое начисление очищает ветку Redo.
-- По нулю звучит локальный WAV и появляется предварительный результат. Судья подтверждает его или выбирает другого спортсмена. При ничьей требуется выбор судьи. Submission тоже требует отдельного выбора и подтверждения. Подтверждённый результат блокирует начисления.
-- Состояние сохраняется после каждого изменения, включая timestamp и Undo/Redo. На старте предлагается восстановление; часы running учитывают время закрытия. Display не перезаписывает сохранение. Ошибка записи отображается оператору.
-- Закрытие активного Control Window требует подтверждения. При закрытии сохраняется матч и закрывается зрительское окно. После подтверждённого закрытия работающие часы продолжают отсчёт по сохранённому timestamp.
-- Панели истории, помощи, BJJ actions и редактирования не перегружают основное табло. Для начисления конкретного приёма нажмите BJJ actions: Takedown, Sweep, Knee on Belly, Guard Pass, Mount, Back Control.
-- Tauri permissions ограничены локальными событиями и управлением окнами. Нет shell, HTTP или filesystem plugins. Production CSP не разрешает внешние источники.
-
-## Горячие клавиши
-
-| Действие | Competitor A / BLUE | Competitor B / WHITE |
-|---|---|---|
-| +2 / +3 / +4 | Q / W / E | I / O / P |
-| Advantage + | A | K |
-| Penalty + | S | L |
-
-Space (Пробел) — Start/Pause/Resume; Backspace — сброс таймера с подтверждением; Ctrl+Z — Undo; Ctrl+Shift+Z — Redo; F11 — fullscreen Control Window. На macOS для Undo/Redo также работает Command. Используются физические позиции клавиш, независимо от раскладки.
-
-В input, textarea, select, contenteditable и открытых диалогах shortcuts отключены. Автоповтор клавиш игнорируется. Escape закрывает только диалог, не приложение. Для уменьшения advantages/penalties используйте кнопки «−».
-
-## Проверки
-
-Unit-тесты проверяют начисления, нижнюю границу 0, все приоритеты результата, ничью, Undo/Redo, истечение времени с задержкой, корректировку часов, восстановление timestamp, submission и очистку матча.
-
-Playwright проверяет сценарий Ivan/Petr на 5 минут: отдельный display, +2/+4, advantage/penalty, Undo/Redo, Pause, 04:00, Resume, перезагрузка и восстановление, синхронизация и окончание времени. Также проверяются shortcuts, ввод имён, BJJ actions и подтверждение submission. Снимки создаются в `test-results/`; вёрстка проверяется на 1366×768 и 1920×1080.
-
-Итог текущей проверки записан в `VERIFICATION.md`: 47 unit-тестов и 5 браузерных сценариев. `node scripts/native-smoke.mjs run` требует предварительно собранный debug EXE; `node scripts/native-smoke.mjs release` проверяет production EXE. Эти скрипты создают тестовый матч в локальном профиле приложения и заменяют его сохранённое состояние; не запускайте их во время соревнования.
-
-Официальные справочники: [Windows prerequisites](https://v2.tauri.app/start/prerequisites/), [Tauri permissions](https://v2.tauri.app/reference/acl/core-permissions/), [Windows installer / offline WebView2](https://v2.tauri.app/distribute/windows-installer/).
+See [package.json](package.json) for project metadata and licensing information.

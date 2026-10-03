@@ -28,7 +28,7 @@ type Store = { match: MatchState; setup: (a: string, b: string, duration: number
   setColor:(side:Side,color:AthleteColor)=>void; presentWinner:(show:boolean)=>void; startOvertime:(attacker:Side|null,duration?:number)=>void;
   score: (side: Side, field: ScoreField, delta: number, label?: string) => void;
   undo: () => void; redo: () => void; toggleTimer: () => void; tick: () => void; setTime: (ms: number) => void; resetTimer: () => void;
-  rename: (side: Side, name: string) => void; finish: (side: Side, reason: FinishReason) => void;
+  rename: (side: Side, name: string) => void; finish: (side: Side, reason: FinishReason) => void; finishDraw: () => void;
 };
 export const useMatchStore = create<Store>((set, get) => ({
   match: blankMatch(), replace: (match) => {
@@ -104,4 +104,5 @@ export const useMatchStore = create<Store>((set, get) => ({
   },
   rename: (side, name) => set(({ match: s }) => name.trim() ? { match: { ...s, [key(side)]: { ...s[key(side)], name: titleCaseName(name.trim()) }, events: [...s.events, event(s, `Name changed to ${name.trim()}`, side)] } } : {}),
   finish: (side, reason) => set(({ match: s }) => s.status === 'setup' || s.confirmed ? {} : { match: { ...s, remainingTime: remainingTime(s), endTimestamp: null, status: 'finished', winner: side, result: reason, confirmed: true, showWinner:true, events: [...s.events, event(s, `Victory by ${reason}`, side)] } }),
+  finishDraw: () => set(({ match: s }) => s.status === 'setup' || s.confirmed || s.competitorA.points !== s.competitorB.points ? {} : { match: { ...s, remainingTime: remainingTime(s), endTimestamp: null, status: 'finished', winner: null, result: 'draw', confirmed: true, showWinner: false, events: [...s.events, event(s, 'Draw confirmed')] } }),
 }));
