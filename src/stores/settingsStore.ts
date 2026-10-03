@@ -1,11 +1,13 @@
 import { create } from 'zustand';
-export type Settings = { locale: 'en' | 'ru'; startSound: boolean; endSound: boolean };
+import type { GongSound } from '../services/audio';
 const KEY = 'tatami.settings.v1';
-const defaults: Settings = { locale: 'ru', startSound: true, endSound: true };
+export type ColorScheme = 'dark' | 'light';
+export type Settings = { locale: 'en' | 'ru'; colorScheme: ColorScheme; startSound: boolean; startSoundVariant: GongSound; endSound: boolean; endSoundVariant: GongSound };
+const defaults: Settings = { locale: 'ru', colorScheme: 'dark', startSound: true, startSoundVariant: 'bright', endSound: true, endSoundVariant: 'bright' };
 function read(): Settings {
   try {
     const value = JSON.parse(localStorage.getItem(KEY) || 'null');
-    return value ? { locale: value.locale === 'en' ? 'en' : 'ru', startSound: typeof value.startSound === 'boolean' ? value.startSound : true, endSound: typeof value.endSound === 'boolean' ? value.endSound : true } : defaults;
+    return value ? { locale: value.locale === 'en' ? 'en' : 'ru', colorScheme: value.colorScheme === 'light' ? 'light' : 'dark', startSound: typeof value.startSound === 'boolean' ? value.startSound : true, startSoundVariant: ['bright','classic','chime'].includes(value.startSoundVariant) ? value.startSoundVariant : 'bright', endSound: typeof value.endSound === 'boolean' ? value.endSound : true, endSoundVariant: ['bright','classic','chime'].includes(value.endSoundVariant) ? value.endSoundVariant : 'bright' } : defaults;
   } catch { return defaults; }
 }
 export const useSettingsStore = create<{ settings: Settings; update: (value: Partial<Settings>) => void; replace: (settings: Settings) => void }>((set, get) => ({

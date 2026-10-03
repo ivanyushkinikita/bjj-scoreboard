@@ -4,12 +4,12 @@ Tatami Scoreboard is an offline Windows application for refereeing Brazilian jiu
 
 ## Highlights
 
-- Single-match mode with configurable athletes, colours, rules, timer, scoring, overtime, undo/redo, and result confirmation.
+- Single-match mode with configurable athletes, colours, rules, timer, scoring, overtime, undo/redo, result confirmation, and CSV match-history export.
 - Tournament mode with single-elimination and round-robin formats.
 - Manual and random bracket placement, automatic byes, match progression, standings, schedule list, and a round-robin matrix.
 - Optional spectator display window synchronized with the referee window.
 - Russian and English interface languages; the Windows installer asks for its language before installation.
-- Local-only match persistence and sounds.
+- Dark and light themes, selectable start/end gong variants, local-only match persistence, and offline operation.
 
 ## Install on Windows
 
@@ -23,7 +23,11 @@ The installer contains the offline WebView2 installer required by the applicatio
 2. In single-match mode, enter the athletes, choose their colours, set a `MM:SS` duration, and start the match.
 3. In a single-elimination tournament, place athletes in the first round (or use random placement), then start the tournament. A competitor without an opponent receives a bye into the next round.
 4. In a round-robin tournament, add the athletes and start the tournament directly. Use the list or table view to select a match.
-5. Confirm each result to advance the bracket or update the standings.
+5. Confirm each result to advance the bracket or update the standings. From the completed-match screen, export the scoring history to CSV; its filename includes both athlete names.
+
+## Settings
+
+Use **Settings** to change the application language and colour theme, select start and end gong sounds, configure rules, and open the synchronized spectator display. All settings are stored locally on the device.
 
 For a concise Russian referee guide, see [MANUAL.md](MANUAL.md).
 

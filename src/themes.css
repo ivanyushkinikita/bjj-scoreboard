@@ -1,0 +1,185 @@
+/* Semantic design tokens. Add a future color scheme by defining this same token set. */
+:root,
+html[data-theme='dark']{
+  color-scheme:dark;
+  --color-bg:#0c1119;
+  --color-surface:#141c27;
+  --color-surface-raised:#151f2d;
+  --color-surface-input:#101721;
+  --color-surface-hover:#2a3545;
+  --color-surface-selected:#29486b;
+  --color-text:#f0f3f7;
+  --color-text-strong:#f7f8fc;
+  --color-text-muted:#a8b3c3;
+  --color-text-subtle:#8291a5;
+  --color-border:#35465c;
+  --color-border-strong:#4b719c;
+  --color-accent:#a7c8ff;
+  --color-accent-hover:#c3daff;
+  --color-accent-contrast:#0d203c;
+  --color-focus:#7db5ff;
+  --color-success:#8fe0bd;
+  --color-warning:#ffce8a;
+  --color-danger:#ff757e;
+  --color-overlay:rgba(3,8,17,.79);
+  --shadow-dialog:0 25px 100px rgba(0,0,0,.58);
+}
+
+html[data-theme='light']{
+  color-scheme:light;
+  --color-bg:#f3f6fa;
+  --color-surface:#ffffff;
+  --color-surface-raised:#f8fafd;
+  --color-surface-input:#ffffff;
+  --color-surface-hover:#e7eef7;
+  --color-surface-selected:#d8e9ff;
+  --color-text:#172235;
+  --color-text-strong:#0d1c32;
+  --color-text-muted:#52647a;
+  --color-text-subtle:#6c7d91;
+  --color-border:#c7d3e1;
+  --color-border-strong:#7396bf;
+  --color-accent:#2864b6;
+  --color-accent-hover:#1d529d;
+  --color-accent-contrast:#ffffff;
+  --color-focus:#2864b6;
+  --color-success:#287a61;
+  --color-warning:#b26a12;
+  --color-danger:#be354b;
+  --color-overlay:rgba(15,31,52,.34);
+  --shadow-dialog:0 25px 80px rgba(24,47,78,.24);
+}
+
+html,body,#root{background:var(--color-bg);color:var(--color-text)}
+*{scrollbar-width:thin;scrollbar-color:var(--color-border-strong) var(--color-surface-raised)}
+*::-webkit-scrollbar{width:12px;height:12px}
+*::-webkit-scrollbar-track{background:var(--color-surface-raised);border-radius:999px}
+*::-webkit-scrollbar-thumb{background:var(--color-border-strong);border:3px solid var(--color-surface-raised);border-radius:999px}
+*::-webkit-scrollbar-thumb:hover{background:var(--color-accent)}
+*::-webkit-scrollbar-corner{background:var(--color-surface-raised)}
+button{display:inline-flex;align-items:center;justify-content:center;border-color:var(--color-border);background:var(--color-surface-raised);color:var(--color-text)}
+button:hover:not(:disabled){background:var(--color-surface-hover)}
+button:focus-visible,a:focus-visible{outline-color:var(--color-focus)}
+input,select{border-color:var(--color-border);background:var(--color-surface-input);color:var(--color-text-strong)}
+input:focus,select:focus{border-color:var(--color-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--color-focus) 18%,transparent)}
+select:disabled,input:disabled{opacity:1;background:var(--color-surface-raised);color:var(--color-text-subtle)}
+label{color:var(--color-text-muted)}
+p{color:var(--color-text-muted)}
+small{color:var(--color-text-subtle)}
+header{border-color:var(--color-border)}
+.header-actions button{gap:8px}
+.brand{color:var(--color-text-strong)}
+.brand-mark,.setup-intro .eyebrow,.mode-selection-copy .eyebrow,.wizard-head .eyebrow{color:var(--color-accent)}
+.brand-sub,.offline,.setup-intro h1 span,.setup-note,.status,.timer-caption{color:var(--color-text-subtle)}
+.setup-card,.wizard-card,.mode-card{background:var(--color-surface);border-color:var(--color-border);box-shadow:0 20px 70px color-mix(in srgb,var(--color-text) 13%,transparent)}
+.mode-card.tournament{background:linear-gradient(135deg,var(--color-surface),var(--color-surface-raised))}
+.mode-card:hover:not(:disabled){background:var(--color-surface-hover);border-color:var(--color-focus)}
+.presets button{background:var(--color-surface-raised)}
+.selected{border-color:var(--color-accent)!important;background:var(--color-surface-selected)!important;color:var(--color-text-strong)!important}
+.primary{background:var(--color-accent);border-color:var(--color-accent);color:var(--color-accent-contrast)}
+.primary:hover:not(:disabled){background:var(--color-accent-hover)}
+.timer{color:var(--color-text-strong)}
+.timer:hover:not(:disabled){background:var(--color-surface-hover)}
+.timer-confirm-result{position:absolute;right:calc(50% + 170px);top:50%;transform:translateY(-50%);width:clamp(200px,22vw,280px);min-height:76px;padding:14px 18px;border:2px solid var(--color-accent);background:var(--color-accent);color:var(--color-accent-contrast);font-size:clamp(16px,1.7vw,21px);font-weight:800;line-height:1.12;letter-spacing:.3px;text-transform:uppercase;box-shadow:0 4px 18px color-mix(in srgb,var(--color-accent) 20%,transparent)}
+.timer-confirm-result:hover:not(:disabled){background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
+.timer-confirm-result:active:not(:disabled){transform:translateY(calc(-50% + 1px))}
+.competitor:not(.white) button{color:inherit}
+.competitor:not(.white) button:hover:not(:disabled){background:rgb(255 255 255 / 18%)}
+.match-controls{margin-top:16px}
+.point-buttons button{align-items:center;justify-content:center;line-height:1}
+.point-buttons button kbd{display:inline-flex;align-items:center;justify-content:center;align-self:center;min-height:20px;line-height:1;vertical-align:middle}
+.expired .timer,.expired .status{color:var(--color-warning)}
+.clock-control.pause{background:var(--color-warning);border-color:var(--color-warning)}
+dialog{color:var(--color-text);background:var(--color-surface);border-color:var(--color-border);box-shadow:var(--shadow-dialog)}
+dialog::backdrop{background:var(--color-overlay)}
+.event{border-color:var(--color-border)}
+.event time,.shortcut-grid h3{color:var(--color-text-subtle)}
+.shortcut-grid b{color:var(--color-text-strong)}
+.restore-summary{background:var(--color-surface-raised)}
+.error{background:color-mix(in srgb,var(--color-danger) 18%,var(--color-surface));border-color:var(--color-danger)}
+.validation{color:var(--color-danger)}
+.winner-content button{transition:background .12s,border-color .12s}
+.winner-content{z-index:2;display:flex;min-height:96vh;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.winner-content>span{display:block;text-align:center}
+.winner-actions{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;margin-top:32px}
+
+/* Selection is communicated by the option outline rather than a checkmark. */
+.winner-option[aria-pressed='true']::after{display:none;content:none}
+.winner-actions button{margin:0}
+.winner-history-export{position:absolute;z-index:3;right:24px;bottom:24px;min-height:42px;padding:9px 14px;font-size:12px}
+.winner-options .winner-option>strong:only-child{margin:0;text-align:center}
+.draw-result-option{display:flex;align-items:center;justify-content:center;min-width:148px;min-height:34px;margin:12px auto 0;padding:6px 14px;border-color:var(--color-text-subtle);background:color-mix(in srgb,var(--color-text-subtle) 25%,var(--color-surface));color:var(--color-text);font-size:11px;text-align:center}
+.draw-result-option:hover:not(:disabled){background:color-mix(in srgb,var(--color-text-subtle) 34%,var(--color-surface))}
+.draw-result-option[aria-pressed='true']{border-color:var(--color-warning);box-shadow:0 0 0 2px color-mix(in srgb,var(--color-warning) 40%,transparent)}
+html[data-theme='light'] .winner-content button{background:var(--color-surface);border-color:var(--color-border-strong);color:var(--color-text-strong)}
+html[data-theme='light'] .winner-content button:hover:not(:disabled){background:color-mix(in srgb,var(--color-surface) 94%,var(--color-accent) 6%);border-color:var(--color-border-strong)}
+html[data-theme='dark'] .winner-content button:hover:not(:disabled){background:rgb(16 26 45 / 88%);border-color:#ffffff99}
+
+/* Tournament surfaces share the same tokens as the match screen. */
+.back-button,.dice-button,.add-bracket-match,.round-robin-drag-handle{background:var(--color-surface-raised);border-color:var(--color-border-strong);color:var(--color-text-strong)}
+.back-button:hover:not(:disabled),.dice-button:hover:not(:disabled),.add-bracket-match:hover:not(:disabled),.round-robin-drag-handle:hover{background:var(--color-surface-hover);border-color:var(--color-focus)}
+.duration-arrows button,.overtime-help button{background:var(--color-surface-raised);border-color:var(--color-border-strong);color:var(--color-text)}
+.duration-arrows button:hover:not(:disabled),.overtime-help button:hover:not(:disabled){background:var(--color-surface-hover);border-color:var(--color-focus)}
+.action-editor input{background:var(--color-surface-input);border-color:var(--color-border-strong)}
+.wizard-steps span{background:var(--color-surface-raised);color:var(--color-text-subtle)}
+.wizard-steps .active{background:var(--color-accent);color:var(--color-accent-contrast)}
+.future-note{border-color:var(--color-border-strong);background:var(--color-surface-raised)}
+.tournament-colors,.tournament-format{border-color:var(--color-border)}
+.tournament-colors legend,.tournament-format legend{color:var(--color-text-muted)}
+.tournament-format label{color:var(--color-text)}
+.tournament-format small{color:var(--color-text-subtle)}
+.tournament-format input[type='radio']{appearance:none;width:18px;height:18px;min-height:18px;margin:0;padding:0;border:2px solid var(--color-border-strong);border-radius:50%;background:var(--color-surface-input);box-shadow:none;cursor:pointer;transition:border-color .12s,background .12s,box-shadow .12s}
+.tournament-format input[type='radio']:checked{border-color:var(--color-accent);background:var(--color-accent);box-shadow:inset 0 0 0 3px var(--color-surface-input)}
+.tournament-format input[type='radio']:focus-visible{outline:3px solid color-mix(in srgb,var(--color-focus) 35%,transparent);outline-offset:2px}
+.repeat-athletes{color:var(--color-text)!important}
+.repeat-athletes input[type='checkbox']{appearance:none;display:grid;place-items:center;width:18px;height:18px;min-height:18px;margin:0;padding:0;border:2px solid var(--color-border-strong);border-radius:3px;background:var(--color-surface-input);cursor:pointer;transition:background .12s,border-radius .12s,border-color .12s}
+.repeat-athletes input[type='checkbox']::after{content:'✓';color:var(--color-accent-contrast);font-size:13px;font-weight:900;line-height:1;transform:scale(0);transition:transform .12s}
+.repeat-athletes input[type='checkbox']:checked{background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
+.repeat-athletes input[type='checkbox']:checked::after{transform:scale(1)}
+.repeat-athletes input[type='checkbox']:hover{border-radius:5px;border-color:var(--color-accent-hover)}
+.repeat-athletes input[type='checkbox']:focus-visible{outline:3px solid color-mix(in srgb,var(--color-focus) 35%,transparent);outline-offset:2px}
+.sport-options label{background:var(--color-surface-raised);border-color:var(--color-border);color:var(--color-text)}
+.sport-options label:has(:checked){background:var(--color-surface-selected);border-color:var(--color-accent);color:var(--color-text-strong)}
+.sport-options input{accent-color:var(--color-accent)}
+.category-options select,.centered-setup .time-input{background:var(--color-surface-input);border-color:var(--color-border-strong);color:var(--color-text-strong)}
+html[data-theme='light'] .setup-rule-summary{color:#264a75;font-weight:650}
+html[data-theme='light'] .setup-rule-summary small{color:#405f83;font-weight:500}
+.athlete-field{background:color-mix(in srgb,var(--athlete) 12%,var(--color-surface));color:var(--color-text)}
+.centered-setup .athlete-field input{background:color-mix(in srgb,var(--athlete) 7%,var(--color-surface-input));color:var(--color-text-strong)}
+.bracket-stage,.bracket-match{background:var(--color-surface-raised);border-color:var(--color-border)}
+.tournament-match{grid-template-columns:minmax(0,1fr);align-items:stretch;justify-content:stretch;justify-items:stretch;background:var(--color-surface-raised);border-color:var(--color-border);color:var(--color-text)}
+.tournament-athlete{width:100%;max-width:100%}
+.tournament-match.playable{border-color:var(--color-focus);box-shadow:0 0 0 1px color-mix(in srgb,var(--color-focus) 34%,transparent)}
+.tournament-match.playable:hover{background:var(--color-surface-hover);border-color:var(--color-focus)}
+.tournament-match small{color:var(--color-text-subtle)}
+.tournament-match.complete small,.round-robin-action.complete{color:var(--color-success)}
+.round-robin-action.active,.round-robin-matrix .matrix-active>button{border-color:var(--color-warning);color:var(--color-warning)}
+.tournament-champion{background:color-mix(in srgb,var(--color-warning) 18%,var(--color-surface));border-color:var(--color-warning);color:var(--color-text-strong)}
+.athlete-pool,.bracket-round,.round-robin-table-wrap,.round-robin-matrix-wrap,.standings-table{background:var(--color-surface);border-color:var(--color-border)}
+.bracket-layout h2,.round-robin-standings h2,.round-robin-schedule>h2,.round-robin-schedule-head h2{color:var(--color-text-subtle)}
+.pool-athlete{background:var(--color-surface-selected);border-color:var(--color-border-strong);color:var(--color-text)}
+.bracket-slot{background:var(--color-surface-input);color:var(--color-text-subtle)}
+.bracket-slot.filled{background:var(--color-surface-selected);border-color:var(--color-border-strong);color:var(--color-text-strong)}
+.round-robin-view-switch{background:var(--color-surface-raised);border-color:var(--color-border)}
+.round-robin-view-switch button{color:var(--color-text-subtle)}
+.round-robin-view-switch button.active{background:var(--color-surface-selected);color:var(--color-text-strong)}
+.round-robin-table-wrap th,.round-robin-matrix thead th,.round-robin-matrix tbody th,.standings-head{background:var(--color-surface-raised);color:var(--color-text-subtle)}
+.round-robin-matrix tbody th{color:var(--color-text)}
+.round-robin-table-wrap th,.round-robin-table-wrap td,.round-robin-matrix th,.round-robin-matrix td,.standings-row{border-color:var(--color-border)}
+.round-robin-matrix td{background:var(--color-surface)}
+.round-robin-matrix td>button{background:var(--color-surface-raised);color:var(--color-text);border-color:transparent}
+.round-robin-matrix td>button:hover:not(:disabled){border-color:var(--color-focus);background:var(--color-surface-hover)}
+.round-robin-matrix .matrix-self,.round-robin-matrix .matrix-self span,.round-robin-matrix .matrix-unavailable{background:var(--color-surface-input)}
+.round-robin-matrix .matrix-complete{background:color-mix(in srgb,var(--color-success) 25%,var(--color-surface))}
+.round-robin-matrix .matrix-complete>button{background:color-mix(in srgb,var(--color-success) 35%,var(--color-surface));color:var(--color-text-strong)}
+.round-robin-standings,.tournament-round+.tournament-round{border-color:var(--color-border)}
+.settings-author{border-color:var(--color-border);color:var(--color-text-subtle)}
+.sound-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0 18px}
+.sound-setting{min-width:0;margin:0;padding:12px;border:1px solid var(--color-border);border-radius:9px;background:var(--color-surface-raised)}
+.sound-setting legend{padding:0 5px;color:var(--color-text-muted);font-size:12px;font-weight:700}
+.sound-choice{display:flex;align-items:center;gap:8px;margin:0;padding:7px 3px;color:var(--color-text);font-size:12px;cursor:pointer}
+.sound-choice input{width:16px;height:16px;min-height:16px;margin:0;padding:0;accent-color:var(--color-accent);flex:0 0 auto}
+.sound-select{margin-top:6px}
+.sound-test{width:100%;min-height:36px;margin-top:8px;padding:6px 8px;font-size:11px}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}

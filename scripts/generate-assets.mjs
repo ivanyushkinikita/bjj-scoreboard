@@ -10,7 +10,11 @@ function gong(file,frequency,strikes,seconds) {
  fs.writeFileSync('public/sounds/'+file,wav);
 }
 gong('start.wav',740,[0],2.4); // One bright high gong.
-gong('horn.wav',390,[0,.55],3.5); // Two lower, resonant gong strikes.
+gong('start-classic.wav',460,[0],2.8); // Lower, traditional opening strike.
+gong('start-chime.wav',940,[0,.3],2.2); // Two high bell-like opening chimes.
+gong('horn.wav',760,[0,.42],2.8); // Default: two bright, clearly audible strikes.
+gong('horn-classic.wav',430,[0,.58],3.6); // Lower, long traditional resonance.
+gong('horn-chime.wav',980,[0,.32,.64],2.5); // Three high, bell-like chimes.
 // 32-bit ICO containing a simple original mat / T monogram.
 fs.mkdirSync('src-tauri/icons', { recursive: true });
 const size = 32, pixels = size * size * 4, mask = size * 4, ico = Buffer.alloc(22 + 40 + pixels + mask);
