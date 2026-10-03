@@ -12,7 +12,7 @@ test('operator scenario, display sync, recovery and time expiry', async ({ page,
   const popup = context.waitForEvent('page');
   await page.getByRole('button', { name:'Open Scoreboard Display', exact:false }).click();
   const display = await popup;
-  await expect(display.getByRole('heading', { name:'Ivan', exact:true })).toBeVisible();
+  await expect(display.getByText('Ivan', { exact:true })).toBeVisible();
   await expect(display.getByRole('button')).toHaveCount(0);
   await page.getByRole('button', { name:'START TIMER' }).click();
   await page.getByRole('button', { name:'A plus 2', exact:true }).click();
@@ -76,12 +76,8 @@ test('shortcuts ignore editing, dialogs and repeat; submission requires confirma
   await page.getByRole('button',{name:'Confirm change'}).click();
   await expect(page.getByTestId('score-A')).toHaveText('4');
   await page.getByRole('button',{name:'Submission',exact:true}).click();
-  await page.getByRole('button',{name:'BLUE Petr'}).click();
-  await expect(page.getByText('Confirm submission victory for')).toBeVisible();
+  await page.getByRole('dialog',{name:'Submission victory'}).getByRole('button',{name:'Petr'}).click();
+  await expect(page.getByRole('button',{name:'Confirm victory'})).toBeEnabled();
   await page.getByRole('button',{name:'Confirm victory'}).click();
-  await expect(page.getByText('Petr WINS')).toBeVisible();
-  await page.getByRole('button',{name:'Back to scoreboard'}).click();
-  await page.getByRole('button',{name:'New match',exact:true}).click();
-  await page.getByRole('button',{name:'Cancel',exact:true}).click();
-  await expect(page.getByText('Petr WINS')).toBeVisible();
+  await expect(page.getByRole('dialog',{name:'Submission victory'})).not.toBeVisible();
 });

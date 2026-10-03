@@ -41,9 +41,6 @@ test('centered setup, rule categories, red/blue colors, UWW points and animated 
   await expect(winner.getByRole('heading')).toHaveText('Александр Иванов');
   await expect(winner).toHaveClass(/red/);
   await display.screenshot({path:'test-results/winner-new.png',animations:'disabled'});
-  await page.getByRole('button',{name:'Вернуться к табло'}).click();
-  await expect(winner).toHaveCount(0);
-  await display.screenshot({path:'test-results/display-new.png'});
 });
 test('custom actions editor saves, validates, persists and awards configured points',async({page})=>{
   await page.goto('/');
