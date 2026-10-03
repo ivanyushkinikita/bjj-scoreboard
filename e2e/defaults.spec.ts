@@ -1,6 +1,7 @@
 ﻿import {test,expect} from '@playwright/test';
 test('last match colors and duration survive new match and restart; duration input and arrows coexist',async({page})=>{
   await page.goto('/');
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   const time=page.getByLabel('Длительность схватки',{exact:true});
   await time.fill('07:35');await time.press('Home');
   await page.getByRole('button',{name:'Увеличить длительность на 1 минуту'}).click();await expect(time).toHaveValue('08:35');

@@ -13,9 +13,11 @@ async function assertScoreFits(page:Page){
 }
 test('large submission beside timer and score numerals stay above stats at supported sizes',async({page,context})=>{
   await page.goto('/');
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   await page.getByLabel('Спортсмен A',{exact:true}).fill('Александр Иванов');
   await page.getByLabel('Спортсмен B',{exact:true}).fill('Максим Петров');
   await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
+  await page.keyboard.press('Space');
   const popup=context.waitForEvent('page');await page.getByRole('button',{name:'Открыть зрительское табло'}).click();const display=await popup;
   for(let i=0;i<25;i++)await page.getByLabel('A: плюс 4',{exact:true}).click();
   await page.getByLabel('B: плюс 4',{exact:true}).click();

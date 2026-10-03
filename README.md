@@ -29,7 +29,7 @@ The installer contains the offline WebView2 installer required by the applicatio
 
 Use **Settings** to change the application language and colour theme, select start and end gong sounds, configure rules, and open the synchronized spectator display. All settings are stored locally on the device.
 
-For a concise Russian referee guide, see [MANUAL.md](MANUAL.md).
+Referee guides: [English](MANUAL.en.md) and [Русский](MANUAL.md).
 
 ## Development
 

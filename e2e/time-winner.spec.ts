@@ -1,6 +1,7 @@
 ﻿import {test,expect} from '@playwright/test';
 test('time arrows follow the cursor and preserve the active segment',async({page})=>{
   await page.goto('/');
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   const time=page.getByLabel('Длительность схватки',{exact:true});
   await time.fill('07:59');await time.press('End');
   await page.getByRole('button',{name:'Увеличить длительность на 1 секунду'}).click();await expect(time).toHaveValue('08:00');
@@ -19,7 +20,7 @@ test('time arrows follow the cursor and preserve the active segment',async({page
   await remaining.press('Home');await remaining.press('ArrowDown');await expect(remaining).toHaveValue('04:31');
 });
 test('submission choices retain athlete colors and setup label is centered',async({page})=>{
-  await page.goto('/');await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');
+  await page.goto('/');await page.getByRole('button',{name:'Одна схватка',exact:true}).click();await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');
   const start=page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'});
   for(const [width,height] of [[1000,680],[1366,768],[1920,1080]]){
     await page.setViewportSize({width,height});

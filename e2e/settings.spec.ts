@@ -10,6 +10,7 @@ test('Russian locale, synchronized language, sound toggles, Space and Backspace 
   });
   const starts = () => page.evaluate(() => (window as unknown as {soundStarts:number}).soundStarts);
   await page.goto('/');
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   await expect(page.locator('html')).toHaveAttribute('lang','ru');
   await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');
   await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');

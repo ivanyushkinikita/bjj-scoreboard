@@ -1,17 +1,18 @@
 import {test,expect} from '@playwright/test';
-test('centered setup, age durations, red/blue colors, UWW points and animated winner sync',async({page,context})=>{
+test('centered setup, rule categories, red/blue colors, UWW points and animated winner sync',async({page,context})=>{
   await page.goto('/');
   await expect(page.getByRole('checkbox')).toHaveCount(0);
   await page.getByLabel('Настройки',{exact:true}).click();
   await page.getByLabel('Возрастная категория').selectOption('kids4');
-  await expect(page.getByLabel('Длительность схватки')).toHaveValue('02:00');
+  await expect(page.getByLabel('Возрастная категория')).toHaveValue('kids4');
   await page.getByLabel('Возрастная категория').selectOption('master1');
   await page.getByLabel('Пояс',{exact:true}).selectOption('black');
-  await expect(page.getByLabel('Длительность схватки')).toHaveValue('06:00');
+  await expect(page.getByLabel('Возрастная категория')).toHaveValue('master1');
   await page.getByLabel('Греплинг · UWW',{exact:true}).check();
   await page.getByLabel('Возрастная категория').selectOption('u17');
-  await expect(page.getByLabel('Длительность схватки')).toHaveValue('05:00');
+  await expect(page.getByLabel('Возрастная категория')).toHaveValue('u17');
   await page.getByLabel('Закрыть диалог').click();
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   await page.getByLabel('Спортсмен A',{exact:true}).fill('Александр Иванов');
   await page.getByLabel('Спортсмен B',{exact:true}).fill('Максим Петров');
   await page.getByLabel('Цвет спортсмена A').selectOption('red');
@@ -20,6 +21,7 @@ test('centered setup, age durations, red/blue colors, UWW points and animated wi
   const box=await page.locator('.setup-card').boundingBox();
   expect(Math.abs(box!.x+box!.width/2-683)).toBeLessThan(2);
   await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
+  await page.keyboard.press('Space');
   const popup=context.waitForEvent('page');await page.getByRole('button',{name:'Открыть зрительское табло'}).click();const display=await popup;
   await expect(display.locator('.competitor.red')).toContainText('Александр Иванов');
   await expect(page.getByTestId('advantages-A')).toHaveCount(0);
@@ -33,7 +35,7 @@ test('centered setup, age durations, red/blue colors, UWW points and animated wi
   await page.getByRole('button',{name:'Амплитудный перевод'}).click();
   await expect(display.getByTestId('score-A')).toHaveText('4');
   await page.getByRole('button',{name:'Сабмишн',exact:true}).click();
-  await page.getByRole('button',{name:'КРАСНЫЙ Александр Иванов'}).click();
+  await page.getByRole('dialog',{name:'Победа сабмишном'}).getByRole('button',{name:'Александр Иванов'}).click();
   await page.getByRole('button',{name:'Подтвердить победу',exact:true}).click();
   const winner=display.getByRole('dialog',{name:'Победитель'});
   await expect(winner.getByRole('heading')).toHaveText('Александр Иванов');
@@ -58,6 +60,7 @@ test('custom actions editor saves, validates, persists and awards configured poi
   await page.screenshot({path:'test-results/custom-editor.png'});
   await modal.getByRole('button',{name:'Сохранить правила'}).click();
   await page.getByLabel('Закрыть диалог').click();
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   await page.getByLabel('Спортсмен A',{exact:true}).fill('Анна');await page.getByLabel('Спортсмен B',{exact:true}).fill('Мария');
   await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
   await page.getByRole('button',{name:'Действия и баллы'}).first().click();

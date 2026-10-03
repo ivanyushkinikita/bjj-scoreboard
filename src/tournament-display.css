@@ -28,6 +28,22 @@
   object-fit: contain;
 }
 
+.display-logo-settings {
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 8px;
+  padding: 6px 12px 12px;
+}
+
+.display-logo-settings legend {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0 5px;
+}
+
 .tournament-branding-button {
   justify-content: center;
   margin: 4px 0;
@@ -57,7 +73,12 @@
 }
 
 .display-settings .spectator-background-picker {
-  margin-top: min(48px, 5vh);
+  margin-top: min(16px, 2vh);
+}
+
+.display-settings .display-logo-settings {
+  margin-bottom: 0;
+  margin-top: 22px;
 }
 
 dialog:has(.display-settings) {
@@ -232,20 +253,23 @@ dialog:has(.display-settings) {
 .tournament-display-matchup__content {
   display: grid;
   gap: clamp(18px, 4vh, 44px);
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(3.5rem, 10vw) minmax(0, 1fr);
   padding: 48px;
   width: min(95vw, 1800px);
 }
 
 .tournament-display-matchup__name {
   color: var(--athlete-color);
-  font-size: clamp(3rem, 8.5vw, 10rem);
+  font-size: clamp(2rem, 5.2vw, 6.25rem);
   font-weight: 800;
   line-height: .95;
   margin: 0;
+  max-width: 100%;
+  min-width: 0;
   hyphens: none;
-  overflow-wrap: normal;
-  word-break: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-wrap: balance;
   text-transform: uppercase;
 }
 
@@ -254,6 +278,7 @@ dialog:has(.display-settings) {
   font-size: clamp(2.2rem, 5vw, 6rem);
   font-weight: 800;
   letter-spacing: .08em;
+  justify-self: center;
 }
 
 .spectator-background-picker {
@@ -304,6 +329,17 @@ dialog:has(.display-settings) {
   width: 100%;
 }
 
+.spectator-background-option__preview .spectator-background--ribbons-smoke,
+.spectator-background-option__preview .spectator-background--contour-fog {
+  background-repeat: no-repeat;
+  background-size: cover, contain;
+}
+
+.spectator-background-option__preview--empty {
+  background: color-mix(in srgb, var(--color-surface) 65%, transparent);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
 .spectator-background-option__label {
   color: var(--color-text-strong);
   font-size: 0.76rem;
@@ -345,7 +381,7 @@ dialog:has(.display-settings) {
 
 .spectator-background-option--custom { cursor: pointer; }
 .spectator-background-option__upload {
-  align-items: center;
+  align-items: stretch;
   cursor: pointer;
   display: grid;
   font-size: .72rem;
@@ -358,7 +394,7 @@ dialog:has(.display-settings) {
   text-decoration: underline;
 }
 .spectator-background-option__upload[data-has-image='true'] { text-decoration: none; }
-.spectator-background-option__upload:not([data-has-image='true']) > span { grid-row: 1 / -1; }
+.spectator-background-option__upload .spectator-background-option__label { align-self: start; }
 .spectator-background-option__upload input { display: none; }
 .spectator-background-upload__hint { display: block; margin-top: 10px; }
 .spectator-background-upload__error { color: var(--danger, #ff9a8f); }
@@ -389,71 +425,6 @@ dialog:has(.display-settings) {
 @media (max-width: 1150px) {
   .app.display > .match { margin: 0 18px; }
 }
-
-/* Ambient presets leave the centre clear for names, clock, score and branding. */
-.spectator-background--preset-side-smoke .spectator-background__glow,
-.spectator-background--preset-low-fog .spectator-background__glow,
-.spectator-background--preset-red-blue-mist .spectator-background__glow {
-  inset: auto;
-  opacity: .48;
-}
-
-.spectator-background--preset-side-smoke .spectator-background__glow {
-  bottom: -24%;
-  height: 68%;
-  width: 38%;
-}
-
-.spectator-background--preset-side-smoke .spectator-background__glow--red {
-  background: radial-gradient(ellipse at 0 100%, #9e555859, transparent 70%);
-  left: -8%;
-}
-
-.spectator-background--preset-side-smoke .spectator-background__glow--blue {
-  background: radial-gradient(ellipse at 100% 100%, #52769c59, transparent 70%);
-  right: -8%;
-}
-
-.spectator-background--preset-side-smoke .spectator-background__sweep { display: none; }
-
-.spectator-background--preset-low-fog .spectator-background__glow {
-  bottom: -18%;
-  height: 44%;
-  opacity: .34;
-  width: 72%;
-}
-
-.spectator-background--preset-low-fog .spectator-background__glow--red {
-  background: radial-gradient(ellipse at 4% 100%, #a6606040, #bbc0c644 40%, transparent 72%);
-  left: -18%;
-}
-
-.spectator-background--preset-low-fog .spectator-background__glow--blue {
-  background: radial-gradient(ellipse at 96% 100%, #607d9b40, #bbc0c644 40%, transparent 72%);
-  right: -18%;
-}
-
-.spectator-background--preset-low-fog .spectator-background__sweep { display: none; }
-.spectator-background--preset-low-fog .spectator-background__vignette { opacity: .5; }
-
-.spectator-background--preset-red-blue-mist .spectator-background__glow {
-  height: 72%;
-  opacity: .44;
-  top: 12%;
-  width: 36%;
-}
-
-.spectator-background--preset-red-blue-mist .spectator-background__glow--red {
-  background: radial-gradient(ellipse at 0 50%, #a6545961, transparent 72%);
-  left: -8%;
-}
-
-.spectator-background--preset-red-blue-mist .spectator-background__glow--blue {
-  background: radial-gradient(ellipse at 100% 50%, #54779e61, transparent 72%);
-  right: -8%;
-}
-
-.spectator-background--preset-red-blue-mist .spectator-background__sweep { display: none; }
 
 .spectator-background--preset-cinematic .spectator-background__glow { opacity: .42; }
 .spectator-background--preset-cinematic .spectator-background__glow--red { background: radial-gradient(ellipse at 18% 62%, #9d56585c, transparent 58%); }

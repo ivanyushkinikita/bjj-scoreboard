@@ -16,6 +16,14 @@ const backgroundAssets: Partial<Record<SpectatorBackgroundId, Record<ColorScheme
   'contour-fog': { dark: contourDark, light: contourLight },
 };
 
+const backgroundLabelKeys: Record<SpectatorBackgroundId, string> = {
+  none: 'No background',
+  'arena-tatami': 'Arena with tatami',
+  'ribbons-smoke': 'Belts',
+  'contour-fog': 'Fog',
+  custom: 'Custom background',
+};
+
 export function SpectatorBackground({ variant, image = null, animated = false, preset = 'arena-dust', preview = false }: { variant: SpectatorBackgroundId; image?: SpectatorBackgroundImage; animated?: boolean; preset?: SpectatorAnimationPreset; preview?: boolean }) {
   const colorScheme = useSettingsStore(state => state.settings.colorScheme);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
@@ -64,11 +72,12 @@ export function SpectatorBackgroundPicker({ value, image = null, animated = fals
       {spectatorBackgrounds.map(background => background === 'custom' ? <div key={background} className="spectator-background-option spectator-background-option--custom" data-selected={value === background}>
         <label className="spectator-background-option__upload" data-has-image={Boolean(image)}>
           <input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,.png,.jpg,.jpeg,.webp,.gif,.bmp" onChange={event => uploadImage(event.currentTarget.files?.[0])}/>
-          {image ? <><span className="spectator-background-option__preview"><SpectatorBackground variant={background} image={image} preview /></span><span className="spectator-background-option__label">{t(`Spectator background: ${background}`)}</span></> : <span>{t('Upload custom background')}</span>}
+          <span className={`spectator-background-option__preview${image ? '' : ' spectator-background-option__preview--empty'}`}>{image && <SpectatorBackground variant={background} image={image} preview />}</span>
+          <span className="spectator-background-option__label">{image ? t(backgroundLabelKeys[background]) : t('Upload custom background')}</span>
         </label>
       </div> : <button key={background} type="button" className="spectator-background-option" aria-pressed={value === background} onClick={() => selectBackground(background)}>
         <span className="spectator-background-option__preview"><SpectatorBackground variant={background} image={image} preview /></span>
-        <span className="spectator-background-option__label">{t(`Spectator background: ${background}`)}</span>
+        <span className="spectator-background-option__label">{t(backgroundLabelKeys[background])}</span>
       </button>)}
     </div>
     <label className="spectator-background-animation">

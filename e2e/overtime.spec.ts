@@ -1,6 +1,6 @@
 import {test,expect} from '@playwright/test';
 test('tied expiry configures a separate extra clock, syncs display and survives reload',async({page,context})=>{
-  await page.goto('/');await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');await page.getByLabel('Длительность схватки',{exact:true}).fill('05:00');await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
+  await page.goto('/');await page.getByRole('button',{name:'Одна схватка',exact:true}).click();await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');await page.getByLabel('Длительность схватки',{exact:true}).fill('05:00');await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
   const popup=context.waitForEvent('page');await page.getByRole('button',{name:'Открыть зрительское табло'}).click();const display=await popup;
   await page.getByLabel('A: плюс 2',{exact:true}).click();await page.getByLabel('B: плюс 2',{exact:true}).click();
   await page.getByLabel('Изменить оставшееся время').click();await page.getByRole('textbox',{name:/Оставшееся время/}).fill('00:01');await page.getByRole('button',{name:'Подтвердить изменение'}).click();await page.keyboard.press('Space');

@@ -4,6 +4,7 @@ test.beforeEach(async ({page}) => {
 });
 test('operator scenario, display sync, recovery and time expiry', async ({ page, context }) => {
   await page.goto('/');
+  await page.getByRole('button', { name:'Single match', exact:true }).click();
   await page.getByLabel('Competitor A', { exact:true }).fill('Ivan');
   await page.getByLabel('Competitor B', { exact:true }).fill('Petr');
   await page.getByRole('button', { name:'5m', exact:true }).click();
@@ -55,6 +56,7 @@ test('operator scenario, display sync, recovery and time expiry', async ({ page,
 });
 test('shortcuts ignore editing, dialogs and repeat; submission requires confirmation', async ({page}) => {
   await page.goto('/');
+  await page.getByRole('button',{name:'Single match',exact:true}).click();
   await page.getByLabel('Competitor A', {exact:true}).fill('Ivan');
   await page.getByLabel('Competitor B', {exact:true}).fill('Petr');
   await page.getByRole('button',{name:'START MATCH'}).click();

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('defaults to red and blue, formats names, and prompts for a winner when time expires', async ({ page }) => {
   await page.goto('/');
+  await page.getByRole('button',{name:'Одна схватка',exact:true}).click();
   const colors = page.locator('.color-select select');
   await expect(colors.nth(0)).toHaveValue('red');
   await expect(colors.nth(1)).toHaveValue('blue');

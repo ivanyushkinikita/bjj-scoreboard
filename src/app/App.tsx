@@ -39,11 +39,17 @@ export default function App() {
   const [tournament, setTournament] = useState<TournamentState | null>(null);
   const [activeTournamentMatch, setActiveTournamentMatch] = useState<TournamentMatch | null>(null);
   const [monitorList, setMonitorList] = useState<Awaited<ReturnType<typeof monitors>>>([]);
+  const [displayLogoDraft, setDisplayLogoDraft] = useState<Settings['spectatorLogo']>(() => settings.spectatorLogo);
+  const [displayLogoError, setDisplayLogoError] = useState<string | null>(null);
   const [displayBackgroundDraft, setDisplayBackgroundDraft] = useState<Pick<Settings, 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>>(() => ({ spectatorBackground: settings.spectatorBackground, spectatorBackgroundImage: settings.spectatorBackgroundImage, spectatorBackgroundAnimated: settings.spectatorBackgroundAnimated, spectatorAnimationPreset: settings.spectatorAnimationPreset, spectatorTimerBackground: settings.spectatorTimerBackground }));
   const [, renderTick] = useState(0);
   const expiryPrompt=useRef<string|null>(null);
   useEffect(() => {
-    if (dialog === 'display') setDisplayBackgroundDraft({ spectatorBackground: settings.spectatorBackground, spectatorBackgroundImage: settings.spectatorBackgroundImage, spectatorBackgroundAnimated: settings.spectatorBackgroundAnimated, spectatorAnimationPreset: settings.spectatorAnimationPreset, spectatorTimerBackground: settings.spectatorTimerBackground });
+    if (dialog === 'display') {
+      setDisplayLogoDraft(settings.spectatorLogo);
+      setDisplayLogoError(null);
+      setDisplayBackgroundDraft({ spectatorBackground: settings.spectatorBackground, spectatorBackgroundImage: settings.spectatorBackgroundImage, spectatorBackgroundAnimated: settings.spectatorBackgroundAnimated, spectatorAnimationPreset: settings.spectatorAnimationPreset, spectatorTimerBackground: settings.spectatorTimerBackground });
+    }
   }, [dialog]);
   const openOvertime=()=>{setValue('01:00');setChoice(null);setOvertimeHelpOpen(false);setDialog('overtime');};
   useEffect(()=>{
@@ -117,11 +123,11 @@ export default function App() {
   }, [dialog, saved, s.status, store]);
   const ms = remainingTime(s), winnerName = s.winner === 'A' ? s.competitorA.name : s.competitorB.name;
   const close = () => { setDialog(null); setChoice(null); setDrawSelected(false); setOvertimeHelpOpen(false); };
-  const syncDisplayBackground = (update: Partial<Pick<Settings, 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>>) => {
+  const syncDisplayBackground = (update: Partial<Pick<Settings, 'spectatorLogo' | 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>>) => {
     const currentPresentation = useMatchStore.getState().match.tournamentPresentation;
     const presentation = tournament
       ? { name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null }
-      : { name: currentPresentation?.name ?? '', logo: currentPresentation?.logo ?? null };
+      : { name: currentPresentation?.name ?? '', logo: update.spectatorLogo ?? settings.spectatorLogo };
     const currentBackground = {
       spectatorBackground: currentPresentation?.spectatorBackground ?? settings.spectatorBackground,
       spectatorBackgroundImage: currentPresentation?.spectatorBackgroundImage ?? settings.spectatorBackgroundImage,
@@ -132,11 +138,23 @@ export default function App() {
     changeSettings(update);
     store.setTournamentPresentation({ ...presentation, ...currentBackground, ...update });
     if (tournament) {
-      setTournament(current => current ? { ...current, draft: { ...current.draft, ...update } } : current);
+      const { spectatorLogo: _spectatorLogo, ...tournamentUpdate } = update;
+      setTournament(current => current ? { ...current, draft: { ...current.draft, ...tournamentUpdate } } : current);
     }
   };
+  const uploadDisplayLogo = (file?: File) => {
+    setDisplayLogoError(null);
+    if (!file) return;
+    if (file.type !== 'image/png') return setDisplayLogoError(t('Logo must be a PNG image.'));
+    if (file.size > 2 * 1024 * 1024) return setDisplayLogoError(t('The logo must be 2 MB or smaller.'));
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      if (typeof reader.result === 'string') setDisplayLogoDraft(reader.result);
+    });
+    reader.readAsDataURL(file);
+  };
   const applyDisplayBackground = () => {
-    syncDisplayBackground(displayBackgroundDraft);
+    syncDisplayBackground({ ...displayBackgroundDraft, spectatorLogo: displayLogoDraft });
     close();
   };
   const edit = (side: Side) => { setValue(side === 'A' ? s.competitorA.name : s.competitorB.name); setDialog(side === 'A' ? 'editA' : 'editB'); };
@@ -200,8 +218,8 @@ export default function App() {
   const timerWasStarted = s.status === 'running' || s.status === 'paused' || s.status === 'finished' || s.events.some(event => event.type === 'Timer started' || event.type === 'Timer resumed');
   if (isDisplay && spectatorBackground !== 'none') {
     const namesAreKnown = Boolean(s.competitorA.name.trim() && s.competitorB.name.trim());
-    const presentation = s.tournamentPresentation ?? { name: '', logo: null, spectatorBackground, spectatorBackgroundImage, spectatorBackgroundAnimated, spectatorAnimationPreset, spectatorTimerBackground };
-    if (!namesAreKnown) return <div className="app display"><TournamentDisplayIntro presentation={presentation} showBranding={Boolean(s.tournamentPresentation)}/></div>;
+    const presentation = s.tournamentPresentation ?? { name: '', logo: settings.spectatorLogo, spectatorBackground, spectatorBackgroundImage, spectatorBackgroundAnimated, spectatorAnimationPreset, spectatorTimerBackground };
+    if (!namesAreKnown) return <div className="app display"><TournamentDisplayIntro presentation={presentation} showBranding={Boolean(s.tournamentPresentation) || Boolean(presentation.logo)}/></div>;
     if (!timerWasStarted) return <div className="app display"><TournamentDisplayMatchup athleteA={s.competitorA.name} athleteB={s.competitorB.name} colorA={s.competitorA.color ?? 'var(--athlete-red)'} colorB={s.competitorB.color ?? 'var(--athlete-blue)'} spectatorBackground={spectatorBackground} spectatorBackgroundImage={spectatorBackgroundImage} spectatorBackgroundAnimated={spectatorBackgroundAnimated} spectatorAnimationPreset={spectatorAnimationPreset}/></div>;
   }
   return <div className={`app ${isDisplay ? 'display' : ''}`}>
@@ -221,7 +239,7 @@ export default function App() {
     {s.confirmed&&s.showWinner&&s.winner&&<div className={`winner-celebration ${s.winner==='A'?s.competitorA.color:s.competitorB.color}`} role="dialog" aria-modal="true" aria-label={t('Winner')}><div className="winner-rays"/><div className="winner-content"><p>{t('WINS')}</p><h1 style={{fontSize: winnerName.length>35?'clamp(40px, 7vw, 120px)':winnerName.length>20?'clamp(48px, 9vw, 160px)':'clamp(64px, 13vw, 220px)'}}>{winnerName}</h1><span>{t(`BY ${s.result?.toUpperCase()}`)}</span>{!isDisplay && (activeTournamentMatch ? <button autoFocus onClick={completeTournamentMatch}>{t('Back to tournament')}</button> : <div className="winner-actions"><button autoFocus onClick={()=>{store.reset();setMode('single');}}>{t('Create next match')}</button><button onClick={()=>{store.reset();setMode('choice');}}>{t('Main screen')}</button></div>)}</div>{!isDisplay && <button className="winner-history-export" onClick={() => downloadMatchHistoryCsv(s, locale)}>{t('Export match history')}</button>}</div>}
     {!isDisplay&&s.confirmed&&s.winner&&!s.showWinner&&<button className="winner-replay" onClick={()=>store.presentWinner(true)}>{t('Show winner')}</button>}
     {saved && !isDisplay && <Modal title="Welcome back to the mat"><p>{t("A previous match was saved locally.")}</p><div className="restore-summary">{saved.competitorA.name} <strong>{saved.competitorA.points} : {saved.competitorB.points}</strong> {saved.competitorB.name}</div><p>{t("Running clocks include the time elapsed while the application was closed.")}</p><div className="dialog-actions"><button onClick={() => { setSaved(null); store.reset(); setMode('single'); }}>{t("START NEW MATCH")}</button><button className="primary" onClick={() => { expiryPrompt.current=saved.events.filter(e=>e.type==='Time expired').at(-1)?.id||null; run(unlockAudio); store.replace(saved); store.tick(); setSaved(null); }}>{t("RESTORE PREVIOUS MATCH")}</button></div></Modal>}
-    {dialog && <Modal title={{ history:'Match history', help:'Keyboard shortcuts', time:'Adjust remaining time', new:'Start a new match?', reset:'Reset the match clock?', submission:'Submission victory', decision:'Confirm match result', display:'Scoreboard display', settings:'Settings', close:'Close application?', editA:'Edit competitor A', editB:'Edit competitor B', overtime:'Extra Time', returnTournament:'Return to bracket' }[dialog]} titleAccessory={dialog === 'overtime' ? <div className={`overtime-help ${overtimeHelpOpen ? 'open' : ''}`}><button type="button" aria-label={t('Extra time setup instructions')} aria-expanded={overtimeHelpOpen} onClick={() => setOvertimeHelpOpen(current => !current)}>?</button><span role="tooltip">{t('Extra time setup instructions')}</span></div> : undefined} close={close} closeOnBackdrop={dialog === 'settings' || dialog === 'display' || dialog === 'submission' || dialog === 'decision'}>
+    {dialog && <Modal title={{ history:'Match history', help:'Keyboard shortcuts', time:'Adjust remaining time', new:'Start a new match?', reset:'Reset the match clock?', submission:'Submission victory', decision:'Confirm match result', display:'Scoreboard display', settings:'Settings', close:'Close application?', editA:'Edit competitor A', editB:'Edit competitor B', overtime:'Extra Time', returnTournament:'Return to bracket' }[dialog]} titleAccessory={dialog === 'overtime' ? <div className={`overtime-help ${overtimeHelpOpen ? 'open' : ''}`}><button type="button" aria-label={t('Extra time setup instructions')} aria-expanded={overtimeHelpOpen} onClick={() => setOvertimeHelpOpen(current => !current)}>?</button><span role="tooltip">{t('Extra time setup instructions')}</span></div> : undefined} close={dialog === 'display' ? undefined : close} closeOnBackdrop={dialog === 'submission' || dialog === 'decision'}>
       {dialog === 'history' && <EventLog events={s.events} onExport={() => downloadMatchHistoryCsv(s, locale)}/>}
       {dialog === 'help' && <p>{t('Backspace · Reset timer (with confirmation)')}</p>}
       {dialog === 'help' && <><div className="shortcut-grid"><div><h3>{t((s.competitorA.color||'blue').toUpperCase())+' · A'}</h3><p>{t("Q / W / E")}<b>+2 / +3 / +4</b></p><p>{t("A")}<b>{t("Advantage +")}</b></p><p>{t("S")}<b>{t("Penalty +")}</b></p></div><div><h3>{t((s.competitorB.color||'white').toUpperCase())+' · B'}</h3><p>{t("I / O / P")}<b>+2 / +3 / +4</b></p><p>{t("K")}<b>{t("Advantage +")}</b></p><p>{t("L")}<b>{t("Penalty +")}</b></p></div></div><p>{t("Space · Start / Pause / Resume")}</p><p>{t("Ctrl+Z · Undo &nbsp; Ctrl+Shift+Z · Redo")}</p><p>{t("F11 · Control window fullscreen")}</p><small>{t("Shortcuts are disabled while editing or when a dialog is open. Escape only dismisses dialogs.")}</small></>}
@@ -237,7 +255,23 @@ export default function App() {
       </form>}
       {dialog === 'settings' && <><h3>{t('Sport')}</h3><RulesPicker rules={s.rules} onChange={canConfigureRules(s)?store.configureRules:undefined}/>{!canConfigureRules(s)&&<small>{t('Rules are locked after the match starts. Start a new match to change them.')}</small>}<label>{t('Language')}<select aria-label={t('Language')} value={settings.locale} onChange={e => changeSettings({locale:e.target.value as 'en'|'ru'})}><option value="ru">Русский</option><option value="en">English</option></select></label><label>{t('Theme')}<select aria-label={t('Theme')} value={settings.colorScheme} onChange={e => changeSettings({colorScheme:e.target.value as Settings['colorScheme']})}><option value="dark">{t('Dark')}</option><option value="light">{t('Light')}</option></select></label><h3>{t('Sounds')}</h3><div className="sound-settings-grid"><fieldset className="sound-setting"><legend>{t('Start-of-match gong')}</legend><label className="sound-choice"><input type="checkbox" checked={settings.startSound} onChange={e => changeSettings({startSound:e.target.checked})}/><span>{t('Play sound when the match timer starts')}</span></label><select className="sound-select" aria-label={t('Start-of-match gong')} value={settings.startSoundVariant} onChange={e => changeSettings({startSoundVariant:e.target.value as Settings['startSoundVariant']})}><option value="bright">{t('Bright gong')}</option><option value="classic">{t('Classic gong')}</option><option value="chime">{t('Bell chime')}</option></select><button className="sound-test" onClick={() => run(() => playStart(settings.startSoundVariant))}>{t('Test start sound')}</button></fieldset><fieldset className="sound-setting"><legend>{t('End-of-match gong')}</legend><label className="sound-choice"><input type="checkbox" checked={settings.endSound} onChange={e => changeSettings({endSound:e.target.checked})}/><span>{t('Play sound when time expires')}</span></label><select className="sound-select" aria-label={t('End-of-match gong')} value={settings.endSoundVariant} onChange={e => changeSettings({endSoundVariant:e.target.value as Settings['endSoundVariant']})}><option value="bright">{t('Bright gong')}</option><option value="classic">{t('Classic gong')}</option><option value="chime">{t('Bell chime')}</option></select><button className="sound-test" onClick={() => run(() => playHorn(settings.endSoundVariant))}>{t('Test end-of-match sound')}</button></fieldset></div><small>{t('Sound settings are saved on this device. Start sound plays on Start, not on Resume.')}</small><button className="wide" onClick={() => { setDialog('display'); run(async () => setMonitorList(await monitors())); }}>{t('Display settings')}</button><div className="settings-author">Никита Иванюшкин</div></>}
       {dialog === 'settings' && <div className="settings-author settings-author--footer">Никита Иванюшкин</div>}
-      {dialog === 'display' && <div className="display-settings"><p>{t("Move the spectator window to a monitor, then enable fullscreen.")}</p><div className="display-actions"><button onClick={() => run(openDisplay)}>{t("Open Scoreboard Display")}</button><button onClick={() => run(() => fullscreen(true))}>{t("Toggle display fullscreen")}</button><button onClick={() => run(closeDisplay)}>{t("Close display")}</button></div><label>{t("Available monitors")}<select defaultValue="" onChange={e => run(() => moveDisplay(Number(e.target.value)))}><option value="" disabled>{t("Select a monitor")}</option>{monitorList.map((m,i) => <option key={i} value={i}>{m.name || `Monitor ${i+1}`} · {m.size.width} × {m.size.height}</option>)}</select></label>{!monitorList.length && <small>{t("Monitor selection is available in the desktop application. You can also drag the display window manually.")}</small>}<button className="wide" onClick={() => run(() => fullscreen())}>{t("Toggle control fullscreen")}</button><SpectatorBackgroundPicker value={displayBackgroundDraft.spectatorBackground} image={displayBackgroundDraft.spectatorBackgroundImage} animated={displayBackgroundDraft.spectatorBackgroundAnimated} preset={displayBackgroundDraft.spectatorAnimationPreset} timerBackground={displayBackgroundDraft.spectatorTimerBackground} onChange={spectatorBackground => { const update = { spectatorBackground, spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) ? displayBackgroundDraft.spectatorBackgroundAnimated : false }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onImageChange={spectatorBackgroundImage => { const update = { spectatorBackgroundImage, ...(spectatorBackgroundImage ? { spectatorBackground: 'custom' as const } : {}) }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onAnimatedChange={spectatorBackgroundAnimated => { const update = { spectatorBackgroundAnimated }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onPresetChange={spectatorAnimationPreset => { const update = { spectatorAnimationPreset }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onTimerBackgroundChange={spectatorTimerBackground => setDisplayBackgroundDraft(current => ({ ...current, spectatorTimerBackground }))}/><div className="dialog-actions display-settings__actions"><button className="primary" onClick={applyDisplayBackground}>{t('Apply')}</button></div></div>}
+      {dialog === 'display' && <div className="display-settings">
+        <p>{t('Move the spectator window to a monitor, then enable fullscreen.')}</p>
+        <div className="display-actions"><button onClick={() => run(openDisplay)}>{t('Open Scoreboard Display')}</button><button onClick={() => run(() => fullscreen(true))}>{t('Toggle display fullscreen')}</button><button onClick={() => run(closeDisplay)}>{t('Close display')}</button></div>
+        <label>{t('Available monitors')}<select defaultValue="" onChange={event => run(() => moveDisplay(Number(event.target.value)))}><option value="" disabled>{t('Select a monitor')}</option>{monitorList.map((monitor, index) => <option key={index} value={index}>{monitor.name || `Monitor ${index + 1}`} · {monitor.size.width} × {monitor.size.height}</option>)}</select></label>
+        {!monitorList.length && <small>{t('Monitor selection is available in the desktop application. You can also drag the display window manually.')}</small>}
+        <fieldset className="display-logo-settings">
+          <legend>{t('Logo')}</legend>
+          <label className="tournament-logo-control">
+            <input type="file" accept="image/png" onChange={event => uploadDisplayLogo(event.currentTarget.files?.[0])}/>
+            <span className="tournament-logo-control__hint">{t('Upload a transparent PNG up to 2 MB.')}</span>
+            {displayLogoError && <span className="tournament-logo-control__error" role="alert">{displayLogoError}</span>}
+          </label>
+          {displayLogoDraft && <div className="tournament-logo-preview"><img src={displayLogoDraft} alt={t('Spectator logo')}/><button type="button" onClick={() => { setDisplayLogoDraft(null); setDisplayLogoError(null); }}>{t('Remove logo')}</button></div>}
+        </fieldset>
+        <SpectatorBackgroundPicker value={displayBackgroundDraft.spectatorBackground} image={displayBackgroundDraft.spectatorBackgroundImage} animated={displayBackgroundDraft.spectatorBackgroundAnimated} preset={displayBackgroundDraft.spectatorAnimationPreset} timerBackground={displayBackgroundDraft.spectatorTimerBackground} onChange={spectatorBackground => { const update = { spectatorBackground, spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) ? displayBackgroundDraft.spectatorBackgroundAnimated : false }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onImageChange={spectatorBackgroundImage => { const update = { spectatorBackgroundImage, ...(spectatorBackgroundImage ? { spectatorBackground: 'custom' as const } : {}) }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onAnimatedChange={spectatorBackgroundAnimated => { const update = { spectatorBackgroundAnimated }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onPresetChange={spectatorAnimationPreset => { const update = { spectatorAnimationPreset }; setDisplayBackgroundDraft(current => ({ ...current, ...update })); syncDisplayBackground(update); }} onTimerBackgroundChange={spectatorTimerBackground => setDisplayBackgroundDraft(current => ({ ...current, spectatorTimerBackground }))}/>
+        <div className="dialog-actions display-settings__actions"><button type="button" onClick={() => setDialog('settings')}>{t('Back')}</button><button className="primary" onClick={applyDisplayBackground}>{t('Apply')}</button></div>
+      </div>}
     </Modal>}
   </div>;
 }

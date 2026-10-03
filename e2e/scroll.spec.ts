@@ -5,7 +5,7 @@ async function noScroll(page:Page){
  const scrollers=await page.evaluate(()=>[...document.querySelectorAll('.match *')].filter(e=>{const css=getComputedStyle(e);return e.clientHeight>0&&((/auto|scroll/.test(css.overflowY)&&e.scrollHeight>e.clientHeight+1)||(/auto|scroll/.test(css.overflowX)&&e.scrollWidth>e.clientWidth+1));}).map(e=>e.className));expect(scrollers).toEqual([]);
 }
 test('score buttons do not introduce scrolling or move the match screen',async({page,context})=>{
- await page.goto('/');await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
+ await page.goto('/');await page.getByRole('button',{name:'Одна схватка',exact:true}).click();await page.getByLabel('Спортсмен A',{exact:true}).fill('Иван');await page.getByLabel('Спортсмен B',{exact:true}).fill('Пётр');await page.getByRole('button',{name:'СОЗДАТЬ СХВАТКУ'}).click();
  const popup=context.waitForEvent('page');await page.getByRole('button',{name:'Открыть зрительское табло'}).click();const display=await popup;
  for(const [width,height] of [[1000,680],[1366,768],[1920,1080]]){
   await page.setViewportSize({width,height});await display.setViewportSize({width,height});await noScroll(page);

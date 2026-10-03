@@ -4,7 +4,7 @@ import { changeScore } from '../domain/scoring';
 import { defaultRules, disqualificationLimit, matchWinner, penaltyAward, ruleMinutes, type Rules, type AthleteColor } from '../domain/rules';
 import { remainingTime } from '../domain/timer';
 import { titleCaseName } from '../domain/names';
-import { isAnimatableSpectatorBackground, normalizeSpectatorAnimationPreset, normalizeSpectatorBackground, normalizeSpectatorBackgroundImage } from '../types/tournament';
+import { isAnimatableSpectatorBackground, normalizeSpectatorAnimationPreset, normalizeSpectatorBackground, normalizeSpectatorBackgroundImage, normalizeSpectatorLogo } from '../types/tournament';
 
 export const blankMatch = (): MatchState => ({
   competitorA: { name: '', points: 0, advantages: 0, penalties: 0, color:'red' },
@@ -38,7 +38,7 @@ export const useMatchStore = create<Store>((set, get) => ({
     const spectatorBackground = normalizeSpectatorBackground(presentation?.spectatorBackground);
     normalized.tournamentPresentation = presentation && typeof presentation === 'object' ? {
       name: typeof presentation.name === 'string' ? presentation.name : '',
-      logo: typeof presentation.logo === 'string' ? presentation.logo : null,
+      logo: normalizeSpectatorLogo(presentation.logo),
       spectatorBackground,
       spectatorBackgroundImage: normalizeSpectatorBackgroundImage(presentation.spectatorBackgroundImage),
       spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) && presentation.spectatorBackgroundAnimated === true,
