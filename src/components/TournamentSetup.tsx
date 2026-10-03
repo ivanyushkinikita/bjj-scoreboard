@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type DragEvent } from 'react';
 import { useTranslation } from '../app/i18n';
 import { formatTime, parseTime } from '../domain/timer';
 import type { AthleteColor } from '../domain/rules';
@@ -13,11 +13,12 @@ type BracketAthlete = { id: number; name: string; duplicateIndex?: number };
 const initialCompetitors = () => Array.from({ length: 4 }, () => '');
 const nextPowerOfTwo = (value: number) => 2 ** Math.ceil(Math.log2(Math.max(2, value)));
 const athleteColors: AthleteColor[] = ['red', 'blue', 'white'];
+const dragSourceMime = 'application/x-tatami-athlete';
 
 export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onStart: (draft: TournamentDraft, placements: (number | null)[]) => void }) {
   const { t } = useTranslation();
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [draft, setDraft] = useState<TournamentDraft>({ name: '', matchDuration: 300000, competitors: initialCompetitors(), matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'standard' });
+  const [draft, setDraft] = useState<TournamentDraft>({ name: '', matchDuration: 300000, competitors: initialCompetitors(), matchColors: ['red', 'blue'], format: 'single-elimination', ruleset: 'olympic' });
   const [time, setTime] = useState(formatTime(300000));
   const [placements, setPlacements] = useState<(number | null)[]>([]);
   const [dragged, setDragged] = useState<DragSource | null>(null);
@@ -50,10 +51,28 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     if (matchColors[1 - index] === color) matchColors[1 - index] = previous;
     return { ...current, matchColors };
   });
-  const beginDrag = (source: DragSource) => {
+  const beginDrag = (source: DragSource, event?: DragEvent<HTMLElement>) => {
+    if (event) {
+      const serialized = JSON.stringify(source);
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData(dragSourceMime, serialized);
+      event.dataTransfer.setData('text/plain', serialized);
+    }
     setDragged(source);
     setDropIndex(null);
     setOverPool(false);
+  };
+  const sourceFromEvent = (event: DragEvent<HTMLElement>): DragSource | null => {
+    try {
+      const raw = event.dataTransfer.getData(dragSourceMime) || event.dataTransfer.getData('text/plain');
+      const source: unknown = JSON.parse(raw);
+      if (typeof source !== 'object' || source === null || !('kind' in source)) return null;
+      if (source.kind === 'pool' && 'athleteId' in source && typeof source.athleteId === 'number') return { kind: 'pool', athleteId: source.athleteId };
+      if (source.kind === 'slot' && 'index' in source && typeof source.index === 'number') return { kind: 'slot', index: source.index };
+    } catch {
+      // The click-to-place fallback remains available when a browser blocks drag data.
+    }
+    return null;
   };
 
   const toAthletes = () => {
@@ -75,13 +94,13 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     }
     openBracket();
   };
-  const place = (index: number) => {
-    if (!dragged) return;
+  const place = (index: number, source = dragged) => {
+    if (!source) return;
     setPlacements(current => {
       const next = [...current];
-      const incoming = dragged.kind === 'pool' ? dragged.athleteId : next[dragged.index];
+      const incoming = source.kind === 'pool' ? source.athleteId : next[source.index];
       if (incoming === null) return current;
-      if (dragged.kind === 'slot') next[dragged.index] = next[index] ?? null;
+      if (source.kind === 'slot') next[source.index] = next[index] ?? null;
       next[index] = incoming;
       return next;
     });
@@ -89,9 +108,9 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
     setDropIndex(null);
     setOverPool(false);
   };
-  const returnToPool = () => {
-    if (!dragged || dragged.kind !== 'slot') return;
-    setPlacements(current => current.map((athleteId, index) => index === dragged.index ? null : athleteId));
+  const returnToPool = (source = dragged) => {
+    if (!source || source.kind !== 'slot') return;
+    setPlacements(current => current.map((athleteId, index) => index === source.index ? null : athleteId));
     setDragged(null);
     setDropIndex(null);
     setOverPool(false);
@@ -132,7 +151,6 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
         </label>)}
       </fieldset>
       {!duration && <p className="validation">{t('Enter a duration from 00:01 to 99:59.')}</p>}
-      <p className="future-note">{t('Olympic rules and round-robin formats are planned for a later release.')}</p>
       <button className="primary wizard-next" disabled={!duration || !draft.name.trim()}>{t('Continue')} <span aria-hidden="true">→</span></button>
     </form>}
 
@@ -148,9 +166,9 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
       <div className="bracket-toolbar"><div><strong>{draft.name}</strong><small>{formatTime(draft.matchDuration)} · {competitors.length} {t('athletes')}</small></div><div className="bracket-actions"><button className="dice-button" onClick={randomize} aria-label={t('Randomize bracket')} title={t('Randomize bracket')}><img src={randomizeBracketIcon} alt="" /></button><button className="reset-bracket" onClick={resetBracket}>{t('Reset bracket')}</button></div></div>
       <p className="bracket-help">{t('Drag athletes into the first-round slots. Random distribution can still be adjusted manually.')}</p>
       <div className="bracket-layout">
-        <aside className={`athlete-pool ${overPool ? 'drop-target' : ''}`} aria-label={t('Athlete pool')} onDragEnter={() => dragged?.kind === 'slot' && setOverPool(true)} onDragLeave={event => { if (event.currentTarget === event.target) setOverPool(false); }} onDragOver={event => event.preventDefault()} onDrop={returnToPool}>
-          <h2>{t('Athletes')}</h2><label className="repeat-athletes"><input type="checkbox" checked={allowRepeatedAthletes} onChange={event => setAllowRepeatedAthletes(event.target.checked)}/><span>{t('Use athletes more than once')}</span></label>
-          {(allowRepeatedAthletes ? competitors : competitors.filter(athlete => !placements.includes(athlete.id))).map(athlete => <button draggable key={athlete.id} className="pool-athlete" onDragStart={() => beginDrag({ kind: 'pool', athleteId: athlete.id })} onDragEnd={() => { setDragged(null); setDropIndex(null); setOverPool(false); }}>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</button>)}
+        <aside className={`athlete-pool ${overPool ? 'drop-target' : ''}`} aria-label={t('Athlete pool')} onDragEnter={() => dragged?.kind === 'slot' && setOverPool(true)} onDragLeave={event => { if (event.currentTarget === event.target) setOverPool(false); }} onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={event => { event.preventDefault(); returnToPool(dragged ?? sourceFromEvent(event)); }}>
+          <h2>{t('Athletes')}</h2><label className="repeat-athletes"><input type="checkbox" checked={allowRepeatedAthletes} onChange={event => setAllowRepeatedAthletes(event.target.checked)}/><span>{t('Multi-select athlete')}</span></label>
+          {(allowRepeatedAthletes ? competitors : competitors.filter(athlete => !placements.includes(athlete.id))).map(athlete => <button draggable key={athlete.id} className={`pool-athlete ${dragged?.kind === 'pool' && dragged.athleteId === athlete.id ? 'drag-selected' : ''}`} onClick={() => beginDrag({ kind: 'pool', athleteId: athlete.id })} onDragStart={event => beginDrag({ kind: 'pool', athleteId: athlete.id }, event)} onDragEnd={() => { setDragged(null); setDropIndex(null); setOverPool(false); }}>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</button>)}
         </aside>
         <div className="bracket-round first-round">
           <div className="round-title"><h2>{t('Round 1')}</h2><button type="button" className="add-bracket-match" onClick={addMatch}>{t('Add match')}</button></div>
@@ -160,7 +178,7 @@ export function TournamentSetup({ onBack, onStart }: { onBack: () => void; onSta
               const athlete = athletesById.get(placements[index] ?? -1);
               const color = draft.matchColors[index % 2];
               const isDropTarget = dropIndex === index && !!dragged;
-              return <button draggable={!!athlete} key={index} className={`bracket-slot ${athlete ? 'filled' : ''} slot-${color} ${isDropTarget ? `drop-${color}` : ''}`} onDragStart={() => athlete && beginDrag({ kind: 'slot', index })} onDragEnd={() => { setDragged(null); setDropIndex(null); setOverPool(false); }} onDragEnter={() => dragged && setDropIndex(index)} onDragLeave={event => { if (event.currentTarget === event.target) setDropIndex(null); }} onDragOver={event => event.preventDefault()} onDrop={() => place(index)}>{athlete ? <>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</> : <span>{t('Drop athlete here')}</span>}</button>;
+              return <button draggable={!!athlete} key={index} className={`bracket-slot ${athlete ? 'filled' : ''} slot-${color} ${isDropTarget ? `drop-${color}` : ''} ${dragged?.kind === 'slot' && dragged.index === index ? 'drag-selected' : ''}`} onClick={() => { if (dragged) place(index); else if (athlete) beginDrag({ kind: 'slot', index }); }} onDragStart={event => athlete && beginDrag({ kind: 'slot', index }, event)} onDragEnd={() => { setDragged(null); setDropIndex(null); setOverPool(false); }} onDragEnter={() => dragged && setDropIndex(index)} onDragLeave={event => { if (event.currentTarget === event.target) setDropIndex(null); }} onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; }} onDrop={event => { event.preventDefault(); place(index, dragged ?? sourceFromEvent(event)); }}>{athlete ? <>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</> : <span>{t('Drop athlete here')}</span>}</button>;
             })}
           </section>)}</div>
         </div>

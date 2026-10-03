@@ -19,3 +19,13 @@ it('automatically advances a lone athlete but waits for the adjacent match winne
   const complete = tournamentRounds(tournament({ 'round-0-match-0': 0, 'round-1-match-0': 0 }));
   expect(complete[1][0].winnerId).toBe(0);
 });
+
+it('spreads first-round byes so no athlete skips straight to the final', () => {
+  const rounds = tournamentRounds({ ...tournament(), seeds: [0, 1, 2, 3, 4] });
+
+  expect(rounds[0].filter(match => match.automatic)).toHaveLength(3);
+  expect(rounds[1]).toEqual(expect.arrayContaining([
+    expect.objectContaining({ athleteA: 3, athleteB: 4, winnerId: null, automatic: false }),
+  ]));
+  expect(rounds.at(-1)?.[0]).toMatchObject({ winnerId: null, automatic: false });
+});

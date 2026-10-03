@@ -5,10 +5,25 @@ import { Modal } from './Modal';
 
 type Athlete = { id: number; name: string; duplicateIndex?: number };
 
+function balancedFirstRoundSeeds(seeds: (number | null)[]) {
+  const athletes = seeds.filter((id): id is number => id !== null);
+  const bracketSize = 2 ** Math.ceil(Math.log2(Math.max(2, athletes.length)));
+  const firstRoundMatches = bracketSize / 2;
+  const extraAthletes = athletes.length - firstRoundMatches;
+  let cursor = 0;
+
+  // Spread byes across round one. This prevents a competitor from being
+  // advanced through an empty second-round branch straight into the final.
+  return Array.from({ length: firstRoundMatches }, (_, index) => {
+    const pair: (number | null)[] = [athletes[cursor++] ?? null];
+    pair.push(index < extraAthletes ? athletes[cursor++] ?? null : null);
+    return pair;
+  }).flat();
+}
+
 export function tournamentRounds(tournament: TournamentState): TournamentMatch[][] {
   const rounds: TournamentMatch[][] = [];
-  const bracketSize = 2 ** Math.ceil(Math.log2(Math.max(2, tournament.seeds.length)));
-  let entrants = [...tournament.seeds, ...Array.from({ length: bracketSize - tournament.seeds.length }, () => null)].map(id => ({ id, resolved: true }));
+  let entrants: { id: number | null; resolved: boolean }[] = balancedFirstRoundSeeds(tournament.seeds).map(id => ({ id, resolved: true }));
   let round = 0;
   while (entrants.length > 1) {
     const resolvedMatches = Array.from({ length: entrants.length / 2 }, (_, index) => {
@@ -34,7 +49,7 @@ export function tournamentRounds(tournament: TournamentState): TournamentMatch[]
   return rounds;
 }
 
-export function TournamentBracket({ tournament, onStartMatch, onExit }: { tournament: TournamentState; onStartMatch: (match: TournamentMatch) => void; onExit: () => void }) {
+export function TournamentBracket({ tournament, activeMatchId, onStartMatch, onExit }: { tournament: TournamentState; activeMatchId: string | null; onStartMatch: (match: TournamentMatch) => void; onExit: () => void }) {
   const { t } = useTranslation();
   const [confirmExit, setConfirmExit] = useState(false);
   const athletes = useMemo<Athlete[]>(() => {
@@ -57,6 +72,17 @@ export function TournamentBracket({ tournament, onStartMatch, onExit }: { tourna
     return athlete ? <>{athlete.name}{athlete.duplicateIndex && <sup className="duplicate-marker">{athlete.duplicateIndex}</sup>}</> : <span className="tournament-empty">—</span>;
   };
 
+  const renderMatch = (match: TournamentMatch) => {
+    const isActive = activeMatchId === match.id;
+    const playable = match.athleteA !== null && match.athleteB !== null && match.winnerId === null;
+    const canOpen = isActive || (activeMatchId === null && playable);
+    return <button key={match.id} className={`tournament-match ${match.winnerId !== null ? 'complete' : ''} ${playable ? 'playable' : ''} ${isActive ? 'active' : ''}`} disabled={!canOpen} onClick={() => onStartMatch(match)}>
+      <span className={`tournament-athlete slot-${tournament.draft.matchColors[0]} ${match.winnerId === match.athleteA ? 'winner' : ''}`}>{label(match.athleteA)}</span>
+      <span className={`tournament-athlete slot-${tournament.draft.matchColors[1]} ${match.winnerId === match.athleteB ? 'winner' : ''}`}>{label(match.athleteB)}</span>
+      <small>{isActive ? t('Resume match') : match.automatic ? t('Automatic advance') : match.winnerId !== null ? t('Completed') : playable ? t('Start match') : t('Awaiting opponent')}</small>
+    </button>;
+  };
+
   return <main className="tournament-board" aria-labelledby="tournament-board-title">
     <div className="tournament-board-head">
       <div><div className="eyebrow">{t('TOURNAMENT')}</div><h1 id="tournament-board-title">{tournament.draft.name}</h1><p>{t('Click a match to start the timer.')}</p></div>
@@ -65,14 +91,7 @@ export function TournamentBracket({ tournament, onStartMatch, onExit }: { tourna
     <section className="tournament-map" aria-label={t('Tournament bracket')}>
       {rounds.map((matches, roundIndex) => <section className="tournament-round" key={roundIndex}>
         <h2>{roundIndex === rounds.length - 1 ? t('Final') : `${t('Round')} ${roundIndex + 1}`}</h2>
-        <div className="tournament-round-matches">{matches.filter(match => match.athleteA !== null || match.athleteB !== null).map(match => {
-          const playable = match.athleteA !== null && match.athleteB !== null && match.winnerId === null;
-          return <button key={match.id} className={`tournament-match ${match.winnerId !== null ? 'complete' : ''} ${playable ? 'playable' : ''}`} disabled={!playable} onClick={() => onStartMatch(match)}>
-            <span className={`tournament-athlete slot-${tournament.draft.matchColors[0]} ${match.winnerId === match.athleteA ? 'winner' : ''}`}>{label(match.athleteA)}</span>
-            <span className={`tournament-athlete slot-${tournament.draft.matchColors[1]} ${match.winnerId === match.athleteB ? 'winner' : ''}`}>{label(match.athleteB)}</span>
-            <small>{match.automatic ? t('Automatic advance') : match.winnerId !== null ? t('Completed') : playable ? t('Start match') : t('Awaiting opponent')}</small>
-          </button>;
-        })}</div>
+        <div className="tournament-round-matches">{matches.filter(match => match.athleteA !== null || match.athleteB !== null).map(renderMatch)}</div>
       </section>)}
     </section>
     {confirmExit && <Modal title="Leave tournament" close={() => setConfirmExit(false)}><p>{t('Leave this tournament and return to the mode selection?')}</p><div className="dialog-actions"><button onClick={() => setConfirmExit(false)}>{t('Cancel')}</button><button className="primary" onClick={onExit}>{t('Leave tournament')}</button></div></Modal>}

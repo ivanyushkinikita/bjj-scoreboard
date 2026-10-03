@@ -37,6 +37,6 @@ describe('match lifecycle', () => {
   it('new match clears all state', () => { get().score('A','points',4);get().finish('A','submission');get().reset();expect(get().match.status).toBe('setup');expect(get().match.events).toEqual([]);expect(get().match.winner).toBeNull();expect(get().match.competitorA.name).toBe(''); });
 });
 describe('time input', () => {
-  it.each(['05:00','07:00','12:00','15:00'])('round trips %s', value => expect(formatTime(parseTime(value)!)).toBe(value));
+  it.each(['00:00','00:05','05:00','07:00','12:00','15:00'])('round trips %s', value => expect(formatTime(parseTime(value)!)).toBe(value));
   it.each(['5:99','-1:00','abc','1:2','100:00','01:02:03','01:00.000'])('rejects %s', value => expect(parseTime(value)).toBeNull());
 });

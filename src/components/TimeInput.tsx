@@ -36,11 +36,18 @@ export function TimeInput({value,onChange,label,autoFocus=false}:{value:string;o
   },[value]);
   const increase=t(part==='second'?'Increase duration by 1 second':'Increase duration by 1 minute');
   const decrease=t(part==='second'?'Decrease duration by 1 second':'Decrease duration by 1 minute');
+  const moveSelection = (nextSelection: { start: number; end: number }) => {
+    selection.current = nextSelection;
+    // When a typed digit is already 0, React keeps the same controlled value
+    // and does not run the layout effect. Set the caret after the key event as
+    // well, otherwise the browser restores it to the same digit.
+    window.requestAnimationFrame(() => input.current?.setSelectionRange(nextSelection.start, nextSelection.end));
+  };
   const updateDigit = (digit: string, position: number) => {
     const current = maskTime(value);
     const index = position < 2 ? position : Math.max(3, Math.min(4, position));
     const next = `${current.slice(0, index)}${digit}${current.slice(index + 1)}`;
-    selection.current = { start: index === 1 ? 3 : Math.min(5, index + 1), end: index === 1 ? 3 : Math.min(5, index + 1) };
+    moveSelection({ start: index === 1 ? 3 : Math.min(5, index + 1), end: index === 1 ? 3 : Math.min(5, index + 1) });
     onChange(maskTime(next));
   };
   const clearDigit = (backward: boolean, start: number, end: number) => {
@@ -49,7 +56,7 @@ export function TimeInput({value,onChange,label,autoFocus=false}:{value:string;o
     const index = backward ? positions.at(-1) : positions[0];
     if (index === undefined) return;
     const next = `${current.slice(0, index)}0${current.slice(index + 1)}`;
-    selection.current = { start: index, end: index };
+    moveSelection({ start: index, end: index });
     onChange(next);
   };
   return <div className="duration-input"><input ref={input} autoFocus={autoFocus} required maxLength={5} inputMode="numeric" pattern="[0-9]{2}:[0-5][0-9]" aria-label={label} className="time-input" value={maskTime(value)} onChange={e=>onChange(maskTime(e.target.value))} onPaste={e=>{e.preventDefault();selection.current={start:5,end:5};onChange(maskTime(e.clipboardData.getData('text')));}} onSelect={selectPart} onClick={selectPart} onKeyUp={selectPart} onKeyDown={e=>{if(e.key==='ArrowUp'||e.key==='ArrowDown'){e.preventDefault();step(e.key==='ArrowUp'?1:-1);return;}if(/^\d$/.test(e.key)){e.preventDefault();updateDigit(e.key,e.currentTarget.selectionStart??0);return;}if(e.key==='Backspace'||e.key==='Delete'){e.preventDefault();clearDigit(e.key==='Backspace',e.currentTarget.selectionStart??0,e.currentTarget.selectionEnd??0);return;}if(e.key.length===1)e.preventDefault();}} placeholder={t('MM:SS')} aria-invalid={!duration}/><div className="duration-arrows"><button type="button" aria-label={increase} title={increase} disabled={!duration||duration>=maximumDuration} onMouseDown={e=>e.preventDefault()} onClick={()=>step(1)}>▲</button><button type="button" aria-label={decrease} title={decrease} disabled={!duration||duration<=1000} onMouseDown={e=>e.preventDefault()} onClick={()=>step(-1)}>▼</button></div></div>;
