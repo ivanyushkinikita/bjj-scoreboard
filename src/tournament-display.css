@@ -44,28 +44,6 @@
   padding: 0 5px;
 }
 
-.tournament-branding-button {
-  justify-content: center;
-  margin: 4px 0;
-  width: 100%;
-}
-
-.tournament-branding-dialog {
-  display: grid;
-  gap: 8px;
-  max-height: calc(85vh - 132px);
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.tournament-branding-dialog__actions {
-  background: var(--color-surface, #151e2b);
-  bottom: 0;
-  margin-top: 16px;
-  padding-top: 12px;
-  position: sticky;
-}
-
 .display-settings {
   display: flex;
   flex-direction: column;

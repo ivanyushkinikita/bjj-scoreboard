@@ -32,12 +32,6 @@ export function normalizeSpectatorAnimationPreset(value: unknown): SpectatorAnim
 }
 export type TournamentDraft = {
   name: string;
-  logo: string | null;
-  spectatorBackground: SpectatorBackground;
-  spectatorBackgroundImage?: SpectatorBackgroundImage;
-  spectatorBackgroundAnimated?: boolean;
-  spectatorAnimationPreset?: SpectatorAnimationPreset;
-  spectatorTimerBackground?: boolean;
   matchDuration: number;
   competitors: string[];
   matchColors: [AthleteColor, AthleteColor];

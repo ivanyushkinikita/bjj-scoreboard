@@ -65,8 +65,8 @@ export default function App() {
   useEffect(() => { document.documentElement.lang = locale; }, [locale]);
   useEffect(() => { document.documentElement.dataset.theme = settings.colorScheme; }, [settings.colorScheme]);
   useEffect(() => {
-    if (!isDisplay && tournament) store.setTournamentPresentation({ name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null, spectatorBackground: tournament.draft.spectatorBackground, spectatorBackgroundImage: tournament.draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: tournament.draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: tournament.draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: tournament.draft.spectatorTimerBackground ?? true });
-  }, [tournament?.draft.name, tournament?.draft.logo, tournament?.draft.spectatorBackground, tournament?.draft.spectatorBackgroundImage, tournament?.draft.spectatorBackgroundAnimated, tournament?.draft.spectatorAnimationPreset, tournament?.draft.spectatorTimerBackground]);
+    if (!isDisplay && tournament) store.setTournamentPresentation({ name: tournament.draft.name.trim() });
+  }, [tournament?.draft.name]);
   useEffect(() => {
     if (!isDisplay) { try { setSaved(loadMatch()); } catch { setError('The saved match could not be read. Start a new match to continue.'); } }
     setBooted(true);
@@ -125,22 +125,9 @@ export default function App() {
   const close = () => { setDialog(null); setChoice(null); setDrawSelected(false); setOvertimeHelpOpen(false); };
   const syncDisplayBackground = (update: Partial<Pick<Settings, 'spectatorLogo' | 'spectatorBackground' | 'spectatorBackgroundImage' | 'spectatorBackgroundAnimated' | 'spectatorAnimationPreset' | 'spectatorTimerBackground'>>) => {
     const currentPresentation = useMatchStore.getState().match.tournamentPresentation;
-    const presentation = tournament
-      ? { name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null }
-      : { name: currentPresentation?.name ?? '', logo: update.spectatorLogo ?? settings.spectatorLogo };
-    const currentBackground = {
-      spectatorBackground: currentPresentation?.spectatorBackground ?? settings.spectatorBackground,
-      spectatorBackgroundImage: currentPresentation?.spectatorBackgroundImage ?? settings.spectatorBackgroundImage,
-      spectatorBackgroundAnimated: currentPresentation?.spectatorBackgroundAnimated ?? settings.spectatorBackgroundAnimated,
-      spectatorAnimationPreset: currentPresentation?.spectatorAnimationPreset ?? settings.spectatorAnimationPreset,
-      spectatorTimerBackground: currentPresentation?.spectatorTimerBackground ?? settings.spectatorTimerBackground,
-    };
     changeSettings(update);
-    store.setTournamentPresentation({ ...presentation, ...currentBackground, ...update });
-    if (tournament) {
-      const { spectatorLogo: _spectatorLogo, ...tournamentUpdate } = update;
-      setTournament(current => current ? { ...current, draft: { ...current.draft, ...tournamentUpdate } } : current);
-    }
+    if (tournament) store.setTournamentPresentation({ name: tournament.draft.name.trim() });
+    else if (currentPresentation) store.setTournamentPresentation(currentPresentation);
   };
   const uploadDisplayLogo = (file?: File) => {
     setDisplayLogoError(null);
@@ -176,7 +163,7 @@ export default function App() {
     const athleteB = tournament.draft.competitors[match.athleteB]?.trim();
     if (!athleteA || !athleteB) return;
     store.setup(athleteA, athleteB, tournament.draft.matchDuration, s.rules, tournament.draft.matchColors);
-    store.setTournamentPresentation({ name: tournament.draft.name.trim(), logo: tournament.draft.logo ?? null, spectatorBackground: tournament.draft.spectatorBackground, spectatorBackgroundImage: tournament.draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: tournament.draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: tournament.draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: tournament.draft.spectatorTimerBackground ?? true });
+    store.setTournamentPresentation({ name: tournament.draft.name.trim() });
     setActiveTournamentMatch(match);
     setMode('tournamentMatch');
   };
@@ -205,21 +192,17 @@ export default function App() {
     const activeSeeds = Array.from({ length: Math.ceil(seeds.length / 2) }, (_, index) => [seeds[index * 2] ?? null, seeds[index * 2 + 1] ?? null] as const)
       .filter(([athleteA, athleteB]) => athleteA !== null || athleteB !== null)
       .flat();
-    store.setTournamentPresentation({ name: draft.name.trim(), logo: draft.logo ?? null, spectatorBackground: draft.spectatorBackground, spectatorBackgroundImage: draft.spectatorBackgroundImage ?? null, spectatorBackgroundAnimated: draft.spectatorBackgroundAnimated ?? false, spectatorAnimationPreset: draft.spectatorAnimationPreset ?? 'arena-dust', spectatorTimerBackground: draft.spectatorTimerBackground ?? true });
+    store.setTournamentPresentation({ name: draft.name.trim() });
     setTournament({ draft: structuredClone(draft), seeds: activeSeeds, results: {}, roundRobinMatchOrder: [], roundRobinView: 'list', freeMatches: [] });
     setMode(draft.format === 'free' ? 'freeTournament' : 'tournamentBracket');
   };
   if (!booted) return null;
-  const spectatorBackground = s.tournamentPresentation?.spectatorBackground ?? settings.spectatorBackground;
-  const spectatorBackgroundImage = s.tournamentPresentation?.spectatorBackgroundImage ?? settings.spectatorBackgroundImage;
-  const spectatorBackgroundAnimated = s.tournamentPresentation?.spectatorBackgroundAnimated ?? settings.spectatorBackgroundAnimated;
-  const spectatorAnimationPreset = s.tournamentPresentation?.spectatorAnimationPreset ?? settings.spectatorAnimationPreset;
-  const spectatorTimerBackground = s.tournamentPresentation?.spectatorTimerBackground ?? settings.spectatorTimerBackground;
+  const { spectatorLogo, spectatorBackground, spectatorBackgroundImage, spectatorBackgroundAnimated, spectatorAnimationPreset, spectatorTimerBackground } = settings;
   const timerWasStarted = s.status === 'running' || s.status === 'paused' || s.status === 'finished' || s.events.some(event => event.type === 'Timer started' || event.type === 'Timer resumed');
   if (isDisplay && spectatorBackground !== 'none') {
     const namesAreKnown = Boolean(s.competitorA.name.trim() && s.competitorB.name.trim());
-    const presentation = s.tournamentPresentation ?? { name: '', logo: settings.spectatorLogo, spectatorBackground, spectatorBackgroundImage, spectatorBackgroundAnimated, spectatorAnimationPreset, spectatorTimerBackground };
-    if (!namesAreKnown) return <div className="app display"><TournamentDisplayIntro presentation={presentation} showBranding={Boolean(s.tournamentPresentation) || Boolean(presentation.logo)}/></div>;
+    const presentation = s.tournamentPresentation ?? { name: '' };
+    if (!namesAreKnown) return <div className="app display"><TournamentDisplayIntro presentation={presentation} logo={spectatorLogo} spectatorBackground={spectatorBackground} spectatorBackgroundImage={spectatorBackgroundImage} spectatorBackgroundAnimated={spectatorBackgroundAnimated} spectatorAnimationPreset={spectatorAnimationPreset} showBranding={Boolean(s.tournamentPresentation) || Boolean(spectatorLogo)}/></div>;
     if (!timerWasStarted) return <div className="app display"><TournamentDisplayMatchup athleteA={s.competitorA.name} athleteB={s.competitorB.name} colorA={s.competitorA.color ?? 'var(--athlete-red)'} colorB={s.competitorB.color ?? 'var(--athlete-blue)'} spectatorBackground={spectatorBackground} spectatorBackgroundImage={spectatorBackgroundImage} spectatorBackgroundAnimated={spectatorBackgroundAnimated} spectatorAnimationPreset={spectatorAnimationPreset}/></div>;
   }
   return <div className={`app ${isDisplay ? 'display' : ''}`}>

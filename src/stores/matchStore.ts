@@ -4,7 +4,6 @@ import { changeScore } from '../domain/scoring';
 import { defaultRules, disqualificationLimit, matchWinner, penaltyAward, ruleMinutes, type Rules, type AthleteColor } from '../domain/rules';
 import { remainingTime } from '../domain/timer';
 import { titleCaseName } from '../domain/names';
-import { isAnimatableSpectatorBackground, normalizeSpectatorAnimationPreset, normalizeSpectatorBackground, normalizeSpectatorBackgroundImage, normalizeSpectatorLogo } from '../types/tournament';
 
 export const blankMatch = (): MatchState => ({
   competitorA: { name: '', points: 0, advantages: 0, penalties: 0, color:'red' },
@@ -35,15 +34,8 @@ export const useMatchStore = create<Store>((set, get) => ({
   match: blankMatch(), replace: (match) => {
     const normalized={...blankMatch(),...match,competitorA:{color:'red' as const,...match.competitorA},competitorB:{color:'blue' as const,...match.competitorB}};
     const presentation = match.tournamentPresentation;
-    const spectatorBackground = normalizeSpectatorBackground(presentation?.spectatorBackground);
     normalized.tournamentPresentation = presentation && typeof presentation === 'object' ? {
       name: typeof presentation.name === 'string' ? presentation.name : '',
-      logo: normalizeSpectatorLogo(presentation.logo),
-      spectatorBackground,
-      spectatorBackgroundImage: normalizeSpectatorBackgroundImage(presentation.spectatorBackgroundImage),
-      spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) && presentation.spectatorBackgroundAnimated === true,
-      spectatorAnimationPreset: normalizeSpectatorAnimationPreset(presentation.spectatorAnimationPreset),
-      spectatorTimerBackground: typeof presentation.spectatorTimerBackground === 'boolean' ? presentation.spectatorTimerBackground : true,
     } : null;
     if(!normalized.overtime && normalized.overtimeAttacker){
       normalized.overtime={duration:match.initialDuration,regulationRemaining:0};
@@ -52,7 +44,7 @@ export const useMatchStore = create<Store>((set, get) => ({
     set({match:normalized});
   }, reset: () => set({ match: blankMatch() }),
   configureRules:(rules)=>set(({match:s})=>!canConfigureRules(s)?{}:{match:{...s,rules:structuredClone(rules),initialDuration:ruleMinutes(rules)*60000,remainingTime:ruleMinutes(rules)*60000}}),
-  setTournamentPresentation: (presentation) => set(({match}) => { const spectatorBackground = presentation ? normalizeSpectatorBackground(presentation.spectatorBackground) : 'arena-tatami'; return { match: { ...match, tournamentPresentation: presentation ? { ...structuredClone(presentation), spectatorBackground, spectatorBackgroundImage: normalizeSpectatorBackgroundImage(presentation.spectatorBackgroundImage), spectatorBackgroundAnimated: isAnimatableSpectatorBackground(spectatorBackground) && presentation.spectatorBackgroundAnimated === true, spectatorAnimationPreset: normalizeSpectatorAnimationPreset(presentation.spectatorAnimationPreset), spectatorTimerBackground: typeof presentation.spectatorTimerBackground === 'boolean' ? presentation.spectatorTimerBackground : true } : null } }; }),
+  setTournamentPresentation: (presentation) => set(({match}) => ({ match: { ...match, tournamentPresentation: presentation ? { name: presentation.name } : null } })),
   setColor:(side,color)=>set(({match:s})=>s[key(side==='A'?'B':'A')].color===color?{}:{match:{...s,[key(side)]:{...s[key(side)],color}}}),
   presentWinner:(show)=>set(({match:s})=>({match:{...s,showWinner:show&&s.confirmed}})),
   startOvertime:(attacker,duration=60000)=>set(({match:s})=>{
