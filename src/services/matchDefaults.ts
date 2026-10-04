@@ -1,20 +1,57 @@
-import type { AthleteColor } from '../domain/rules';
-import type { MatchState } from '../types/match';
-export type MatchDefaults = { colors:[AthleteColor,AthleteColor]; duration:number };
-const KEY='tatami.match-defaults.v1';
-export function loadMatchDefaults():MatchDefaults {
-  const fallback:MatchDefaults={colors:['red','blue'],duration:300000};
+import type { AthleteColor } from "../domain/rules";
+import type { MatchState } from "../types/match";
+export type MatchDefaults = {
+  colors: [AthleteColor, AthleteColor];
+  duration: number;
+};
+const KEY = "tatami.match-defaults.v1";
+export function loadMatchDefaults(): MatchDefaults {
+  const fallback: MatchDefaults = { colors: ["red", "blue"], duration: 300000 };
   try {
-    const saved=JSON.parse(localStorage.getItem(KEY)||'null');
-    const old=JSON.parse(localStorage.getItem('tatami.match.v1')||'null')?.match;
-    const value=saved||{colors:[old?.competitorA?.color||'red',old?.competitorB?.color||'blue'],duration:old?.overtimeAttacker&&!old?.overtime?300000:old?.initialDuration};
-    if(Array.isArray(value.colors)&&value.colors.length===2&&value.colors.every((c:unknown)=>typeof c==='string'&&['red','blue','white'].includes(c))&&value.colors[0]!==value.colors[1])fallback.colors=value.colors;
-    if(Number.isInteger(value.duration)&&value.duration>=1000&&value.duration<=59999000)fallback.duration=value.duration;
-  } catch { /* Invalid preferences fall back to the initial setup. */ }
+    const saved = JSON.parse(localStorage.getItem(KEY) || "null");
+    const old = JSON.parse(
+      localStorage.getItem("tatami.match.v1") || "null",
+    )?.match;
+    const value = saved || {
+      colors: [
+        old?.competitorA?.color || "red",
+        old?.competitorB?.color || "blue",
+      ],
+      duration:
+        old?.overtimeAttacker && !old?.overtime ? 300000 : old?.initialDuration,
+    };
+    if (
+      Array.isArray(value.colors) &&
+      value.colors.length === 2 &&
+      value.colors.every(
+        (c: unknown) =>
+          typeof c === "string" && ["red", "blue", "white"].includes(c),
+      ) &&
+      value.colors[0] !== value.colors[1]
+    )
+      fallback.colors = value.colors;
+    if (
+      Number.isInteger(value.duration) &&
+      value.duration >= 1000 &&
+      value.duration <= 59999000
+    )
+      fallback.duration = value.duration;
+  } catch {
+    /* Invalid preferences fall back to the initial setup. */
+  }
   return fallback;
 }
-export function saveMatchDefaults(match:MatchState) {
-  if(match.status==='setup')return;
-  const defaults:MatchDefaults={colors:[match.competitorA.color||'red',match.competitorB.color||'blue'],duration:match.overtimeAttacker&&!match.overtime?loadMatchDefaults().duration:match.initialDuration};
-  localStorage.setItem(KEY,JSON.stringify(defaults));
+export function saveMatchDefaults(match: MatchState) {
+  if (match.status === "setup") return;
+  const defaults: MatchDefaults = {
+    colors: [
+      match.competitorA.color || "red",
+      match.competitorB.color || "blue",
+    ],
+    duration:
+      match.overtimeAttacker && !match.overtime
+        ? loadMatchDefaults().duration
+        : match.initialDuration,
+  };
+  localStorage.setItem(KEY, JSON.stringify(defaults));
 }

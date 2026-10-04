@@ -1,106 +1,479 @@
-import { useSettingsStore } from '../stores/settingsStore';
-import { competitionRu, competitionEn } from './rulesTranslations';
-const ru: Record<string, string> = {
-  'Logo':'\u041b\u043e\u0433\u043e\u0442\u0438\u043f',
-  'Spectator logo (PNG)':'\u041b\u043e\u0433\u043e\u0442\u0438\u043f \u0437\u0440\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u0433\u043e \u043e\u043a\u043d\u0430 (PNG)', 'Spectator logo':'\u041b\u043e\u0433\u043e\u0442\u0438\u043f \u0437\u0440\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u0433\u043e \u043e\u043a\u043d\u0430',
-  'No background':'\u0411\u0435\u0437 \u0444\u043e\u043d\u0430', 'Arena with tatami':'\u0410\u0440\u0435\u043d\u0430 \u0441 \u0442\u0430\u0442\u0430\u043c\u0438', 'Belts':'\u041f\u043e\u044f\u0441\u0430', 'Fog':'\u0422\u0443\u043c\u0430\u043d', 'Custom background':'\u0421\u0432\u043e\u0439 \u0444\u043e\u043d',
-  'Spectator window appearance':'Оформление зрительского окна', 'Spectator background':'Фон зрительского окна', 'Animate background':'\u0410\u043d\u0438\u043c\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0444\u043e\u043d', 'Animation':'\u0410\u043d\u0438\u043c\u0430\u0446\u0438\u044f', 'Animation preset: arena-dust':'\u041f\u044b\u043b\u044c \u0430\u0440\u0435\u043d\u044b', 'Animation preset: floating-embers':'\u041f\u043b\u0430\u0432\u0430\u044e\u0449\u0438\u0435 \u043e\u0433\u043e\u043d\u044c\u043a\u0438', 'Animation preset: minimal-energy':'\u041c\u0438\u043d\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u044d\u043d\u0435\u0440\u0433\u0438\u044f', 'Animation preset: side-smoke':'\u0411\u043e\u043a\u043e\u0432\u043e\u0439 \u0434\u044b\u043c', 'Animation preset: low-fog':'\u041d\u0438\u0437\u043a\u0438\u0439 \u0442\u0443\u043c\u0430\u043d', 'Animation preset: red-blue-mist':'\u041a\u0440\u0430\u0441\u043d\u043e-\u0441\u0438\u043d\u044f\u044f \u0434\u044b\u043c\u043a\u0430', 'Animation preset: cinematic':'\u041a\u0438\u043d\u0435\u043c\u0430\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0447\u0435\u0441\u043a\u0438\u0439', 'Spectator background: none':'Без фона', 'Spectator background: arena-tatami':'Арена с татами', 'Spectator background: belts-smoke':'Пояса в дыму', 'Spectator background: ribbons-smoke':'Ленты в дымке', 'Spectator background: contour-fog':'Контурный туман', 'Spectator background: symmetric-smoke':'Симметричный дым', 'Spectator background: custom':'Свой фон',
-  'Upload custom background':'Загрузить свой фон', 'Replace custom background':'Заменить свой фон', 'Remove custom background':'Удалить свой фон', 'Raster image up to 5 MB. The image is saved only on this device.':'Растровое изображение до 5 МБ. Сохраняется только на этом устройстве.', 'Background must be a raster image.':'Фон должен быть растровым изображением.', 'The background must be 5 MB or smaller.':'Размер фона не должен превышать 5 МБ.',
-  'Tournament logo (PNG)':'Логотип турнира (PNG)', 'Upload a transparent PNG up to 2 MB.':'Загрузите прозрачный PNG до 2 МБ.', 'Logo must be a PNG image.':'Логотип должен быть в формате PNG.', 'The logo must be 2 MB or smaller.':'Размер логотипа не должен превышать 2 МБ.', 'Remove logo':'Удалить логотип', 'Tournament logo':'Логотип турнира',
-  'Timer background':'\u041f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u044c \u0444\u043e\u043d \u043a \u0442\u0430\u0439\u043c\u0435\u0440\u0443',
-  'Back':'\u041d\u0430\u0437\u0430\u0434',
-  'Export CSV':'\u042d\u043a\u0441\u043f\u043e\u0440\u0442 CSV', 'Export match history':'\u0412\u044b\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0441\u0442\u043e\u0440\u0438\u044e \u0441\u0445\u0432\u0430\u0442\u043a\u0438', 'Shortcut: {key}':'\u0413\u043e\u0440\u044f\u0447\u0430\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0430: {key}',
-  'Start-of-match gong':'\u0413\u043e\u043d\u0433 \u043d\u0430\u0447\u0430\u043b\u0430 \u0441\u0445\u0432\u0430\u0442\u043a\u0438', 'End-of-match gong':'\u0413\u043e\u043d\u0433 \u043e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u044f', 'No sound':'\u0411\u0435\u0437 \u0437\u0432\u0443\u043a\u0430', 'Bright gong':'\u0417\u0432\u043e\u043d\u043a\u0438\u0439 \u0433\u043e\u043d\u0433', 'Classic gong':'\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0433\u043e\u043d\u0433', 'Bell chime':'\u041a\u043e\u043b\u043e\u043a\u043e\u043b\u044c\u0447\u0438\u043a',
-  'Extra Time':'\u0414\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0412\u0440\u0435\u043c\u044f',
-  'Draw':'\u041d\u0438\u0447\u044c\u044f', 'Confirm draw?':'\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u043d\u0438\u0447\u044c\u044e?', 'Confirm draw':'\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u043d\u0438\u0447\u044c\u044e',
-  'Tournament complete':'\u0422\u0443\u0440\u043d\u0438\u0440 \u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043d', 'Finish tournament':'\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0442\u0443\u0440\u043d\u0438\u0440',
-  'Enter a duration from 00:01 to 99:59.':'\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0432\u0440\u0435\u043c\u044f \u043e\u0442 00:01 \u0434\u043e 99:59.',
-  'Match colors':'\u0426\u0432\u0435\u0442\u0430 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432', 'First position':'\u041f\u0435\u0440\u0432\u044b\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d', 'Second position':'\u0412\u0442\u043e\u0440\u043e\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d', 'Match':'\u0421\u0445\u0432\u0430\u0442\u043a\u0430', 'RED':'\u041a\u0420\u0410\u0421\u041d\u042b\u0419',
-  'Remove athlete':'\u0423\u0431\u0440\u0430\u0442\u044c \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430', 'Incomplete athletes':'\u041d\u0435 \u0432\u0441\u0435 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u044b \u0443\u043a\u0430\u0437\u0430\u043d\u044b', 'Some athlete fields are empty. Create the bracket with the filled-in athletes only?':'\u041d\u0435\u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043f\u043e\u043b\u044f \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u044b. \u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0441\u0435\u0442\u043a\u0443 \u0442\u043e\u043b\u044c\u043a\u043e \u0441 \u0443\u043a\u0430\u0437\u0430\u043d\u043d\u044b\u043c\u0438 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430\u043c\u0438?', 'Keep editing':'\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044e', 'Create bracket anyway':'\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0441\u0435\u0442\u043a\u0443',
-  'Start tournament':'\u041d\u0430\u0447\u0430\u0442\u044c \u0442\u0443\u0440\u043d\u0438\u0440', 'Click a match to start the timer.':'\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u043d\u0430 \u0441\u0445\u0432\u0430\u0442\u043a\u0443, \u0447\u0442\u043e\u0431\u044b \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u044c \u0442\u0430\u0439\u043c\u0435\u0440.', 'Champion':'\u0427\u0435\u043c\u043f\u0438\u043e\u043d', 'Final':'\u0424\u0438\u043d\u0430\u043b', 'Round':'\u0420\u0430\u0443\u043d\u0434', 'Automatic advance':'\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u043f\u0440\u043e\u0445\u043e\u0434', 'Completed':'\u0421\u0445\u0432\u0430\u0442\u043a\u0430 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430', 'Start match':'\u041d\u0430\u0447\u0430\u0442\u044c \u0441\u0445\u0432\u0430\u0442\u043a\u0443', 'Awaiting opponent':'\u041e\u0436\u0438\u0434\u0430\u043d\u0438\u0435 \u0441\u043e\u043f\u0435\u0440\u043d\u0438\u043a\u0430', 'Back to tournament':'\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0442\u0443\u0440\u043d\u0438\u0440\u043d\u043e\u0439 \u0441\u0435\u0442\u043a\u0435',
-  'Exit':'\u0412\u044b\u0445\u043e\u0434', 'Leave tournament':'\u041f\u043e\u043a\u0438\u043d\u0443\u0442\u044c \u0422\u0443\u0440\u043d\u0438\u0440', 'Leave this tournament and return to the mode selection?':'\u041f\u043e\u043a\u0438\u043d\u0443\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u0442\u0443\u0440\u043d\u0438\u0440 \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0432\u044b\u0431\u043e\u0440\u0443 \u0440\u0435\u0436\u0438\u043c\u0430?',
-  'Reset bracket':'\u0421\u0431\u0440\u043e\u0441\u0438\u0442\u044c \u0441\u0435\u0442\u043a\u0443',
-  'Use athletes more than once':'\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0440\u0430\u0437',
-  'Multi-select athlete':'\u041c\u0443\u043b\u044c\u0442\u0438\u0432\u044b\u0431\u043e\u0440 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430',
-  'Tournament format':'\u0424\u043e\u0440\u043c\u0430\u0442 \u0442\u0443\u0440\u043d\u0438\u0440\u0430', 'Olympic system':'\u041e\u043b\u0438\u043c\u043f\u0438\u0439\u0441\u043a\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430', 'Round robin':'\u041a\u0440\u0443\u0433\u043e\u0432\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430', 'The loser is eliminated from the tournament.':'\u041f\u0440\u043e\u0438\u0433\u0440\u0430\u0432\u0448\u0438\u0439 \u0432\u044b\u0431\u044b\u0432\u0430\u0435\u0442 \u0438\u0437 \u0442\u0443\u0440\u043d\u0438\u0440\u0430.', 'Each athlete meets every other athlete once.':'\u041a\u0430\u0436\u0434\u044b\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d \u0432\u0441\u0442\u0440\u0435\u0447\u0430\u0435\u0442\u0441\u044f \u0441 \u043a\u0430\u0436\u0434\u044b\u043c \u043e\u0434\u0438\u043d \u0440\u0430\u0437.', 'Select the athletes for the round-robin schedule. Each pair will meet once.':'\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432 \u0434\u043b\u044f \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b. \u041a\u0430\u0436\u0434\u0430\u044f \u043f\u0430\u0440\u0430 \u0432\u0441\u0442\u0440\u0435\u0442\u0438\u0442\u0441\u044f \u043e\u0434\u0438\u043d \u0440\u0430\u0437.', 'Round-robin athletes':'\u0421\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u044b \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b', 'Standings':'\u0422\u0430\u0431\u043b\u0438\u0446\u0430 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432', 'Matches':'\u0421\u0445\u0432\u0430\u0442\u043a\u0438', 'Wins':'\u041f\u043e\u0431\u0435\u0434\u044b', 'Losses':'\u041f\u043e\u0440\u0430\u0436\u0435\u043d\u0438\u044f',
-  'Round-robin schedule':'\u0420\u0430\u0441\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b', 'First athlete':'\u041f\u0435\u0440\u0432\u044b\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d', 'Second athlete':'\u0412\u0442\u043e\u0440\u043e\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d', 'Status':'\u0421\u0442\u0430\u0442\u0443\u0441', 'Round-robin view':'\u0412\u0438\u0434 \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b', 'List':'\u0421\u043f\u0438\u0441\u043e\u043a', 'Table':'\u0422\u0430\u0431\u043b\u0438\u0446\u0430', 'Same athlete':'\u0422\u043e\u0442 \u0436\u0435 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d', 'Replay match':'\u041f\u0435\u0440\u0435\u0438\u0433\u0440\u0430\u0442\u044c \u0441\u0445\u0432\u0430\u0442\u043a\u0443', 'Replay round?':'\u041f\u0435\u0440\u0435\u0438\u0433\u0440\u0430\u0442\u044c \u0440\u0430\u0443\u043d\u0434?', 'Do you want to replay this round? The recorded result will be replaced.':'\u0425\u043e\u0442\u0438\u0442\u0435 \u043f\u0435\u0440\u0435\u0438\u0433\u0440\u0430\u0442\u044c \u0440\u0430\u0443\u043d\u0434? \u0421\u043e\u0445\u0440\u0430\u043d\u0451\u043d\u043d\u044b\u0439 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0431\u0443\u0434\u0435\u0442 \u0437\u0430\u043c\u0435\u043d\u0451\u043d.',
-  'Back to bracket':'\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0441\u0435\u0442\u043a\u0435', 'Return to bracket':'\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0441\u0435\u0442\u043a\u0435', 'Return to the tournament bracket?':'\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0442\u0443\u0440\u043d\u0438\u0440\u043d\u043e\u0439 \u0441\u0435\u0442\u043a\u0435?', 'Keep timer running':'\u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u0442\u0430\u0439\u043c\u0435\u0440 \u0437\u0430\u043f\u0443\u0449\u0435\u043d\u043d\u044b\u043c', 'Stop timer and return':'\u041e\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0442\u0430\u0439\u043c\u0435\u0440 \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f', 'Resume match':'\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0441\u0445\u0432\u0430\u0442\u043a\u0435',
-  'Save bracket':'\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0441\u0435\u0442\u043a\u0443', 'Completed matches are locked. Unplayed matches can still be edited.':'\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0435 \u0441\u0445\u0432\u0430\u0442\u043a\u0438 \u0437\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d\u044b. \u041d\u0435\u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0435 \u043c\u043e\u0436\u043d\u043e \u0438\u0437\u043c\u0435\u043d\u044f\u0442\u044c.',
-  'Drag to reorder':'\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u043f\u043e\u0440\u044f\u0434\u043e\u043a',
-  'Add match':'\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0441\u0445\u0432\u0430\u0442\u043a\u0443',
-  'TATAMI CONTROL':'УПРАВЛЕНИЕ ТАТАМИ', 'Choose a mode':'Выберите режим', 'Start one match or prepare a tournament bracket.':'Начните одну схватку или подготовьте турнирную сетку.',
-  'Single match':'Одна схватка', 'Create and run one match.':'Создайте и проведите одну схватку.', 'Tournament':'Турнир', 'Set the time, athletes and bracket.':'Задайте время, спортсменов и сетку.',
-  '← Back':'← Назад', 'TOURNAMENT':'ТУРНИР', 'Tournament details':'Параметры турнира', 'Tournament athletes':'Спортсмены турнира', 'Tournament bracket':'Турнирная сетка', 'Tournament progress':'Ход настройки турнира',
-  'Tournament name':'Название турнира', 'Time per match':'Время на схватку', 'Olympic rules and round-robin formats are planned for a later release.':'Олимпийские правила и круговая система будут добавлены в следующих версиях.', 'Continue':'Продолжить',
-  'Add at least two athletes. Names are formatted consistently as you type.':'Добавьте не менее двух спортсменов. Имена приводятся к единому формату при вводе.', 'Athlete':'Спортсмен', 'Add athlete':'Добавить спортсмена', 'Create bracket':'Создать сетку',
-  'athletes':'спортсменов', 'Randomize bracket':'Случайно распределить', 'Drag athletes into the first-round slots. Random distribution can still be adjusted manually.':'Перетащите спортсменов в слоты первого раунда. Случайное распределение можно менять вручную.', 'Athlete pool':'Список спортсменов', 'Athletes':'Спортсмены', 'Round 1':'Раунд 1', 'Next rounds':'Следующие раунды', 'Drop athlete here':'Перетащите спортсмена сюда', 'Winner':'Победитель', 'Starting the tournament and recording results will be added next.':'Запуск турнира и фиксация результатов будут добавлены следующим шагом.', 'Create next match':'Создать следующую схватку', 'Main screen':'На главный экран',
-  'm':' мин', 'MM:SS':'ММ:СС', '↶ Undo':'↶ Отменить', '↷ Redo':'↷ Повторить', 'Confirm result →':'Подтвердить результат →',
-  'Ctrl+Z · Undo &nbsp; Ctrl+Shift+Z · Redo':'Ctrl+Z · Отменить   Ctrl+Shift+Z · Повторить',
-  'Sound asset could not be loaded':'Не удалось загрузить звуковой файл',
-  'BJJ SCOREBOARD':'ТАБЛО ДЖИУ-ДЖИТСУ', 'LOCAL / OFFLINE':'ЛОКАЛЬНО / ОФЛАЙН', 'Shortcuts':'Клавиши', 'Keyboard shortcuts':'Горячие клавиши',
-  'Open Scoreboard Display':'Открыть зрительское табло', 'Display settings':'Настройки зрительского табло', 'Settings':'Настройки', 'Apply':'Применить', 'Language':'Язык', 'Theme':'Тема', 'Dark':'Тёмная', 'Light':'Светлая',
-  'READY FOR THE NEXT ROUND':'ГОТОВЫ К СЛЕДУЮЩЕЙ СХВАТКЕ', 'Every point.':'Каждый балл.', 'Every second.':'Каждая секунда.',
-  'Set the match. Take control of the tatami.':'Настройте схватку. Управляйте происходящим на татами.', 'Offline. On your side.':'Без интернета. Всегда рядом.',
-  'MATCH SETUP':'НАСТРОЙКА СХВАТКИ', 'Let’s step onto the mat.':'Время выйти на татами.', 'Competitor A · BLUE':'Спортсмен A · СИНИЙ', 'Competitor B · WHITE':'Спортсмен B · БЕЛЫЙ',
-  'Competitor A':'Спортсмен A', 'Competitor B':'Спортсмен B', 'Athlete name':'Имя спортсмена', 'Match duration':'Длительность схватки',
-  'Enter a duration from 00:01 to 999:59.':'Введите время от 00:01 до 999:59.', 'START MATCH':'СОЗДАТЬ СХВАТКУ', 'The timer starts when you’re ready.':'Запустите таймер, когда будете готовы.',
-  'BLUE':'СИНИЙ', 'WHITE':'БЕЛЫЙ', 'BLUE · A':'СИНИЙ · A', 'WHITE · B':'БЕЛЫЙ · B', 'EDIT':'ИЗМЕНИТЬ', 'ADVANTAGES':'ПРЕИМУЩЕСТВА', 'PENALTIES':'ШТРАФЫ',
-  'BJJ actions':'Приёмы BJJ', 'Takedown':'Перевод в партер', 'Sweep':'Свип', 'Knee on Belly':'Колено на животе', 'Guard Pass':'Проход гарда', 'Mount':'Маунт', 'Back Control':'Контроль спины',
-  'points':'Баллы', 'Points':'Баллы', 'advantages':'Преимущество', 'penalties':'Штраф', 'Undo':'Отменить', 'Redo':'Повторить', 'History':'История',
-  'MATCH COMPLETE':'СХВАТКА ЗАВЕРШЕНА', 'TIME EXPIRED':'ВРЕМЯ ИСТЕКЛО', 'WAITING FOR MATCH':'ОЖИДАНИЕ СХВАТКИ', 'READY':'ГОТОВНОСТЬ', 'RUNNING':'ИДЁТ СХВАТКА', 'PAUSED':'ПАУЗА',
-  'Edit remaining time':'Изменить оставшееся время', 'FINAL RESULT':'ИТОГОВЫЙ РЕЗУЛЬТАТ', 'REVIEW & CONFIRM RESULT':'ПРОВЕРЬТЕ И ПОДТВЕРДИТЕ РЕЗУЛЬТАТ', 'MATCH CLOCK · CLICK TO ADJUST':'ТАЙМЕР · НАЖМИТЕ ДЛЯ ИЗМЕНЕНИЯ',
-  'REFEREE DECISION':'РЕШЕНИЕ СУДЬИ', 'Preliminary result':'Предварительный результат', 'Confirm result':'Подтвердить результат', 'WINS':'ПОБЕЖДАЕТ', 'LEADS':'ЛИДИРУЕТ',
-  'BY TIME':'ПО ВРЕМЕНИ', 'BY SUBMISSION':'САБМИШНОМ', 'BY DECISION':'ПО РЕШЕНИЮ СУДЬИ', 'PAUSE':'ПАУЗА', 'RESUME':'ПРОДОЛЖИТЬ', 'START TIMER':'ЗАПУСТИТЬ ТАЙМЕР', 'SPACE':'ПРОБЕЛ',
-  'Reset timer':'Сбросить таймер', 'Submission':'Сабмишн', 'New match':'Новая схватка', 'PRECISION ON THE MAT.':'ТОЧНОСТЬ НА ТАТАМИ.', 'TATAMI / MATCH CONTROL':'TATAMI / УПРАВЛЕНИЕ СХВАТКОЙ',
-  'Welcome back to the mat':'С возвращением на татами', 'A previous match was saved locally.':'Предыдущая схватка сохранена на этом устройстве.',
-  'Running clocks include the time elapsed while the application was closed.':'Если таймер работал, будет учтено время, прошедшее после закрытия приложения.',
-  'START NEW MATCH':'НАЧАТЬ НОВУЮ СХВАТКУ', 'RESTORE PREVIOUS MATCH':'ВОССТАНОВИТЬ СХВАТКУ', 'Match history':'История схватки', 'Adjust remaining time':'Изменить оставшееся время',
-  'Start a new match?':'Начать новую схватку?', 'Reset the match clock?':'Сбросить таймер схватки?', 'Submission victory':'Победа сабмишном', 'Confirm match result':'Подтвердить результат схватки',
-  'Scoreboard display':'Зрительское табло', 'Close application?':'Закрыть приложение?', 'Edit competitor A':'Изменить спортсмена A', 'Edit competitor B':'Изменить спортсмена B', 'Close dialog':'Закрыть диалог',
-  'Advantage +':'Преимущество +', 'Penalty +':'Штраф +', 'Space · Start / Pause / Resume':'Пробел · Старт / Пауза / Продолжить',
-  'Ctrl+Z · Undo':'Ctrl+Z · Отменить', 'Ctrl+Shift+Z · Redo':'Ctrl+Shift+Z · Повторить', 'F11 · Control window fullscreen':'F11 · Полноэкранный режим окна управления',
-  'Backspace · Reset timer (with confirmation)':'Backspace · Сброс таймера с подтверждением',
-  'Shortcuts are disabled while editing or when a dialog is open. Escape only dismisses dialogs.':'Клавиши не действуют при вводе текста и в диалогах. Escape закрывает только диалог.',
-  'Test end-of-match sound':'Проверить звук окончания', 'Test start sound':'Проверить звук старта', 'Sounds':'Звуки',
-  'Play sound when the match timer starts':'Звук при первом запуске таймера', 'Play sound when time expires':'Звук по окончании времени',
-  'Sound settings are saved on this device. Start sound plays on Start, not on Resume.':'Настройки сохраняются на этом устройстве. Звук старта звучит при первом запуске и после сброса таймера; при продолжении после паузы — нет.',
-  'Remaining time · MM:SS':'Оставшееся время · ММ:СС', 'The clock keeps its current running or paused state.':'Таймер сохранит текущее состояние: отсчёт или паузу.',
-  'Cancel':'Отмена', 'Confirm change':'Подтвердить изменение', 'Confirm':'Подтвердить',
-  'Clear athletes, scores, history and timer, and return to setup?':'Очистить спортсменов, счёт, историю и таймер и вернуться к настройке?',
-  'Reset the clock to {time} and stop it? Scores remain unchanged.':'Сбросить таймер на {time} и остановить его? Счёт сохранится.',
-  'A match is currently running. Close application? Your match is saved, and a running clock continues to elapse.':'Схватка активна. Закрыть приложение? Данные сохранятся, а работающий таймер продолжит отсчёт.',
-  'Select the winner, then confirm the result.':'Выберите победителя и подтвердите результат.', 'Confirm submission victory for {name}?':'Подтвердить победу сабмишном: {name}?',
-  'Confirm victory for {name}?':'Подтвердить победу: {name}?', 'Confirm victory':'Подтвердить победу',
-  'Move the spectator window to a monitor, then enable fullscreen.':'Переместите зрительское окно на нужный монитор и включите полноэкранный режим.',
-  'Toggle display fullscreen':'Полноэкранное зрительское табло', 'Close display':'Закрыть табло', 'Available monitors':'Доступные мониторы', 'Select a monitor':'Выберите монитор', 'Monitor':'Монитор',
-  'Monitor selection is available in the desktop application. You can also drag the display window manually.':'Выбор монитора доступен в desktop-приложении. Окно табло также можно перетащить вручную.',
-  'Toggle control fullscreen':'Полноэкранное окно управления', 'No events yet.':'Событий пока нет.', 'MATCH':'СХВАТКА',
-  'Match created':'Схватка создана', 'Time expired':'Время истекло', 'Timer paused':'Таймер приостановлен', 'Timer started':'Таймер запущен', 'Timer resumed':'Отсчёт продолжен',
-  'Time adjusted (milliseconds)':'Время изменено (мс)', 'Timer reset':'Таймер сброшен', 'Victory by time':'Победа по времени', 'Victory by submission':'Победа сабмишном', 'Victory by decision':'Победа по решению судьи',
-  'Name changed to':'Имя изменено на', 'Dismiss':'Закрыть',
-  'The saved match could not be read. Start a new match to continue.':'Не удалось прочитать сохранённую схватку. Начните новую.',
-  'Local save failed. Keep this window open until storage is available.':'Не удалось сохранить данные. Не закрывайте окно, пока хранилище не станет доступно.',
-  'A {field} minus':'A: {field}, уменьшить', 'A {field} plus':'A: {field}, увеличить', 'B {field} minus':'B: {field}, уменьшить', 'B {field} plus':'B: {field}, увеличить',
-  'A plus {n}':'A: плюс {n}', 'B plus {n}':'B: плюс {n}', 'Competitor {side} scoreboard':'Табло спортсмена {side}',
-  'FREE TOURNAMENT':'СВОБОДНЫЙ ТУРНИР', 'Free tournament':'Свободный турнир', 'Create any match from the participant list and keep a live leaderboard.':'Создавайте любые пары из списка участников и ведите таблицу результатов.',
-  'Current match':'Текущая схватка', 'Leaderboard':'Лидерборд', 'Drag an athlete into a match position.':'Перетащите спортсмена в позицию схватки.', 'Drag two athletes into the coloured positions, then start the match.':'Перетащите двух спортсменов в цветные позиции, затем начните схватку.',
-  'Search match history':'Поиск по истории схваток', 'No matches found.':'Схватки не найдены.',
-  'Select athlete':'Выберите спортсмена', 'Select an athlete for this match position.':'Выберите спортсмена для этой позиции схватки.', 'Remove from match':'Убрать из схватки',
-  'Confirm tournament winner':'Подтвердить победителя турнира', 'Confirm {name} as the tournament winner?':'Подтвердить {name} как победителя турнира?', 'Change winner':'Изменить победителя', 'Select tournament winner':'Выберите победителя турнира',
-  'End tournament':'Закончить турнир',
+import { useSettingsStore } from "../stores/settingsStore";
+import { competitionRu, competitionEn } from "./rulesTranslations";
+import type {
+  Locale,
+  TranslationDictionary,
+  TranslationValues,
+} from "./i18n.types";
+
+export type {
+  Locale,
+  TranslationDictionary,
+  TranslationValues,
+} from "./i18n.types";
+
+// Russian interface catalogue.
+const ru: TranslationDictionary = {
+  Logo: "\u041b\u043e\u0433\u043e\u0442\u0438\u043f",
+  "Spectator logo (PNG)":
+    "\u041b\u043e\u0433\u043e\u0442\u0438\u043f \u0437\u0440\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u0433\u043e \u043e\u043a\u043d\u0430 (PNG)",
+  "Spectator logo":
+    "\u041b\u043e\u0433\u043e\u0442\u0438\u043f \u0437\u0440\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u0433\u043e \u043e\u043a\u043d\u0430",
+  "Show logo on spectator display":
+    "\u041f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0442\u044c \u043b\u043e\u0433\u043e\u0442\u0438\u043f \u043d\u0430 \u0437\u0440\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435",
+  "Show tournament title on spectator display":
+    "\u041f\u043e\u043a\u0430\u0437\u044b\u0432\u0430\u0442\u044c \u043d\u0430\u0437\u0432\u0430\u043d\u0438\u0435 \u0442\u0443\u0440\u043d\u0438\u0440\u0430 \u043d\u0430 \u0437\u0440\u0438\u0442\u0435\u043b\u044c\u0441\u043a\u043e\u043c \u044d\u043a\u0440\u0430\u043d\u0435",
+  "No background": "\u0411\u0435\u0437 \u0444\u043e\u043d\u0430",
+  "Arena with tatami":
+    "\u0410\u0440\u0435\u043d\u0430 \u0441 \u0442\u0430\u0442\u0430\u043c\u0438",
+  Belts: "\u041f\u043e\u044f\u0441\u0430",
+  Fog: "\u0422\u0443\u043c\u0430\u043d",
+  "Custom background": "\u0421\u0432\u043e\u0439 \u0444\u043e\u043d",
+  "Spectator window appearance": "Оформление зрительского окна",
+  "Spectator background": "Фон зрительского окна",
+  "Animate background":
+    "\u0410\u043d\u0438\u043c\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0444\u043e\u043d",
+  Animation: "\u0410\u043d\u0438\u043c\u0430\u0446\u0438\u044f",
+  "Animation preset: arena-dust":
+    "\u041f\u044b\u043b\u044c \u0430\u0440\u0435\u043d\u044b",
+  "Animation preset: floating-embers":
+    "\u041f\u043b\u0430\u0432\u0430\u044e\u0449\u0438\u0435 \u043e\u0433\u043e\u043d\u044c\u043a\u0438",
+  "Animation preset: minimal-energy":
+    "\u041c\u0438\u043d\u0438\u043c\u0430\u043b\u044c\u043d\u0430\u044f \u044d\u043d\u0435\u0440\u0433\u0438\u044f",
+  "Animation preset: side-smoke":
+    "\u0411\u043e\u043a\u043e\u0432\u043e\u0439 \u0434\u044b\u043c",
+  "Animation preset: low-fog":
+    "\u041d\u0438\u0437\u043a\u0438\u0439 \u0442\u0443\u043c\u0430\u043d",
+  "Animation preset: red-blue-mist":
+    "\u041a\u0440\u0430\u0441\u043d\u043e-\u0441\u0438\u043d\u044f\u044f \u0434\u044b\u043c\u043a\u0430",
+  "Animation preset: cinematic":
+    "\u041a\u0438\u043d\u0435\u043c\u0430\u0442\u043e\u0433\u0440\u0430\u0444\u0438\u0447\u0435\u0441\u043a\u0438\u0439",
+  "Spectator background: none": "Без фона",
+  "Spectator background: arena-tatami": "Арена с татами",
+  "Spectator background: belts-smoke": "Пояса в дыму",
+  "Spectator background: ribbons-smoke": "Ленты в дымке",
+  "Spectator background: contour-fog": "Контурный туман",
+  "Spectator background: symmetric-smoke": "Симметричный дым",
+  "Spectator background: custom": "Свой фон",
+  "Upload custom background": "Загрузить свой фон",
+  "Replace custom background": "Заменить свой фон",
+  "Remove custom background": "Удалить свой фон",
+  "Raster image up to 5 MB. The image is saved only on this device.":
+    "Растровое изображение до 5 МБ. Сохраняется только на этом устройстве.",
+  "Background must be a raster image.":
+    "Фон должен быть растровым изображением.",
+  "The background must be 5 MB or smaller.":
+    "Размер фона не должен превышать 5 МБ.",
+  "Tournament logo (PNG)": "Логотип турнира (PNG)",
+  "Upload a transparent PNG up to 2 MB.": "Загрузите прозрачный PNG до 2 МБ.",
+  "Logo must be a PNG image.": "Логотип должен быть в формате PNG.",
+  "The logo must be 2 MB or smaller.":
+    "Размер логотипа не должен превышать 2 МБ.",
+  "Remove logo": "Удалить логотип",
+  "Tournament logo": "Логотип турнира",
+  "Timer background":
+    "\u041f\u0440\u0438\u043c\u0435\u043d\u0438\u0442\u044c \u0444\u043e\u043d \u043a \u0442\u0430\u0439\u043c\u0435\u0440\u0443",
+  Back: "\u041d\u0430\u0437\u0430\u0434",
+  "Export CSV": "\u042d\u043a\u0441\u043f\u043e\u0440\u0442 CSV",
+  "Export match history":
+    "\u0412\u044b\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u0441\u0442\u043e\u0440\u0438\u044e \u0441\u0445\u0432\u0430\u0442\u043a\u0438",
+  "Shortcut: {key}":
+    "\u0413\u043e\u0440\u044f\u0447\u0430\u044f \u043a\u043b\u0430\u0432\u0438\u0448\u0430: {key}",
+  "Start-of-match gong":
+    "\u0413\u043e\u043d\u0433 \u043d\u0430\u0447\u0430\u043b\u0430 \u0441\u0445\u0432\u0430\u0442\u043a\u0438",
+  "End-of-match gong":
+    "\u0413\u043e\u043d\u0433 \u043e\u043a\u043e\u043d\u0447\u0430\u043d\u0438\u044f",
+  "No sound": "\u0411\u0435\u0437 \u0437\u0432\u0443\u043a\u0430",
+  "Bright gong":
+    "\u0417\u0432\u043e\u043d\u043a\u0438\u0439 \u0433\u043e\u043d\u0433",
+  "Classic gong":
+    "\u041a\u043b\u0430\u0441\u0441\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u0433\u043e\u043d\u0433",
+  "Bell chime":
+    "\u041a\u043e\u043b\u043e\u043a\u043e\u043b\u044c\u0447\u0438\u043a",
+  "Extra Time":
+    "\u0414\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0412\u0440\u0435\u043c\u044f",
+  Draw: "\u041d\u0438\u0447\u044c\u044f",
+  "Confirm draw?":
+    "\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u043d\u0438\u0447\u044c\u044e?",
+  "Confirm draw":
+    "\u041f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u043d\u0438\u0447\u044c\u044e",
+  "Tournament complete":
+    "\u0422\u0443\u0440\u043d\u0438\u0440 \u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043d",
+  "Finish tournament":
+    "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044c \u0442\u0443\u0440\u043d\u0438\u0440",
+  "Enter a duration from 00:01 to 99:59.":
+    "\u0412\u0432\u0435\u0434\u0438\u0442\u0435 \u0432\u0440\u0435\u043c\u044f \u043e\u0442 00:01 \u0434\u043e 99:59.",
+  "Match colors":
+    "\u0426\u0432\u0435\u0442\u0430 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432",
+  "First position":
+    "\u041f\u0435\u0440\u0432\u044b\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d",
+  "Second position":
+    "\u0412\u0442\u043e\u0440\u043e\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d",
+  Match: "\u0421\u0445\u0432\u0430\u0442\u043a\u0430",
+  RED: "\u041a\u0420\u0410\u0421\u041d\u042b\u0419",
+  "Remove athlete":
+    "\u0423\u0431\u0440\u0430\u0442\u044c \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430",
+  "Incomplete athletes":
+    "\u041d\u0435 \u0432\u0441\u0435 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u044b \u0443\u043a\u0430\u0437\u0430\u043d\u044b",
+  "Some athlete fields are empty. Create the bracket with the filled-in athletes only?":
+    "\u041d\u0435\u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043f\u043e\u043b\u044f \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u044b. \u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0441\u0435\u0442\u043a\u0443 \u0442\u043e\u043b\u044c\u043a\u043e \u0441 \u0443\u043a\u0430\u0437\u0430\u043d\u043d\u044b\u043c\u0438 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430\u043c\u0438?",
+  "Keep editing":
+    "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u044e",
+  "Create bracket anyway":
+    "\u0421\u043e\u0437\u0434\u0430\u0442\u044c \u0441\u0435\u0442\u043a\u0443",
+  "Start tournament":
+    "\u041d\u0430\u0447\u0430\u0442\u044c \u0442\u0443\u0440\u043d\u0438\u0440",
+  "Click a match to start the timer.":
+    "\u041d\u0430\u0436\u043c\u0438\u0442\u0435 \u043d\u0430 \u0441\u0445\u0432\u0430\u0442\u043a\u0443, \u0447\u0442\u043e\u0431\u044b \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u044c \u0442\u0430\u0439\u043c\u0435\u0440.",
+  Champion: "\u0427\u0435\u043c\u043f\u0438\u043e\u043d",
+  Final: "\u0424\u0438\u043d\u0430\u043b",
+  Round: "\u0420\u0430\u0443\u043d\u0434",
+  "Automatic advance":
+    "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438\u0439 \u043f\u0440\u043e\u0445\u043e\u0434",
+  Completed:
+    "\u0421\u0445\u0432\u0430\u0442\u043a\u0430 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430",
+  "Start match":
+    "\u041d\u0430\u0447\u0430\u0442\u044c \u0441\u0445\u0432\u0430\u0442\u043a\u0443",
+  "Awaiting opponent":
+    "\u041e\u0436\u0438\u0434\u0430\u043d\u0438\u0435 \u0441\u043e\u043f\u0435\u0440\u043d\u0438\u043a\u0430",
+  "Back to tournament":
+    "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0442\u0443\u0440\u043d\u0438\u0440\u043d\u043e\u0439 \u0441\u0435\u0442\u043a\u0435",
+  Exit: "\u0412\u044b\u0445\u043e\u0434",
+  "Leave tournament":
+    "\u041f\u043e\u043a\u0438\u043d\u0443\u0442\u044c \u0422\u0443\u0440\u043d\u0438\u0440",
+  "Leave this tournament and return to the mode selection?":
+    "\u041f\u043e\u043a\u0438\u043d\u0443\u0442\u044c \u0442\u0435\u043a\u0443\u0449\u0438\u0439 \u0442\u0443\u0440\u043d\u0438\u0440 \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0432\u044b\u0431\u043e\u0440\u0443 \u0440\u0435\u0436\u0438\u043c\u0430?",
+  "Reset bracket":
+    "\u0421\u0431\u0440\u043e\u0441\u0438\u0442\u044c \u0441\u0435\u0442\u043a\u0443",
+  "Use athletes more than once":
+    "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432 \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0440\u0430\u0437",
+  "Multi-select athlete":
+    "\u041c\u0443\u043b\u044c\u0442\u0438\u0432\u044b\u0431\u043e\u0440 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u0430",
+  "Tournament format":
+    "\u0424\u043e\u0440\u043c\u0430\u0442 \u0442\u0443\u0440\u043d\u0438\u0440\u0430",
+  "Olympic system":
+    "\u041e\u043b\u0438\u043c\u043f\u0438\u0439\u0441\u043a\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+  "Round robin":
+    "\u041a\u0440\u0443\u0433\u043e\u0432\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+  "The loser is eliminated from the tournament.":
+    "\u041f\u0440\u043e\u0438\u0433\u0440\u0430\u0432\u0448\u0438\u0439 \u0432\u044b\u0431\u044b\u0432\u0430\u0435\u0442 \u0438\u0437 \u0442\u0443\u0440\u043d\u0438\u0440\u0430.",
+  "Each athlete meets every other athlete once.":
+    "\u041a\u0430\u0436\u0434\u044b\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d \u0432\u0441\u0442\u0440\u0435\u0447\u0430\u0435\u0442\u0441\u044f \u0441 \u043a\u0430\u0436\u0434\u044b\u043c \u043e\u0434\u0438\u043d \u0440\u0430\u0437.",
+  "Select the athletes for the round-robin schedule. Each pair will meet once.":
+    "\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u043e\u0432 \u0434\u043b\u044f \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b. \u041a\u0430\u0436\u0434\u0430\u044f \u043f\u0430\u0440\u0430 \u0432\u0441\u0442\u0440\u0435\u0442\u0438\u0442\u0441\u044f \u043e\u0434\u0438\u043d \u0440\u0430\u0437.",
+  "Round-robin athletes":
+    "\u0421\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d\u044b \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b",
+  Standings:
+    "\u0422\u0430\u0431\u043b\u0438\u0446\u0430 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442\u043e\u0432",
+  Matches: "\u0421\u0445\u0432\u0430\u0442\u043a\u0438",
+  Wins: "\u041f\u043e\u0431\u0435\u0434\u044b",
+  Losses: "\u041f\u043e\u0440\u0430\u0436\u0435\u043d\u0438\u044f",
+  "Round-robin schedule":
+    "\u0420\u0430\u0441\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b",
+  "First athlete":
+    "\u041f\u0435\u0440\u0432\u044b\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d",
+  "Second athlete":
+    "\u0412\u0442\u043e\u0440\u043e\u0439 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d",
+  Status: "\u0421\u0442\u0430\u0442\u0443\u0441",
+  "Round-robin view":
+    "\u0412\u0438\u0434 \u043a\u0440\u0443\u0433\u043e\u0432\u043e\u0439 \u0441\u0438\u0441\u0442\u0435\u043c\u044b",
+  List: "\u0421\u043f\u0438\u0441\u043e\u043a",
+  Table: "\u0422\u0430\u0431\u043b\u0438\u0446\u0430",
+  "Same athlete":
+    "\u0422\u043e\u0442 \u0436\u0435 \u0441\u043f\u043e\u0440\u0442\u0441\u043c\u0435\u043d",
+  "Replay match":
+    "\u041f\u0435\u0440\u0435\u0438\u0433\u0440\u0430\u0442\u044c \u0441\u0445\u0432\u0430\u0442\u043a\u0443",
+  "Replay round?":
+    "\u041f\u0435\u0440\u0435\u0438\u0433\u0440\u0430\u0442\u044c \u0440\u0430\u0443\u043d\u0434?",
+  "Do you want to replay this round? The recorded result will be replaced.":
+    "\u0425\u043e\u0442\u0438\u0442\u0435 \u043f\u0435\u0440\u0435\u0438\u0433\u0440\u0430\u0442\u044c \u0440\u0430\u0443\u043d\u0434? \u0421\u043e\u0445\u0440\u0430\u043d\u0451\u043d\u043d\u044b\u0439 \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u0431\u0443\u0434\u0435\u0442 \u0437\u0430\u043c\u0435\u043d\u0451\u043d.",
+  "Back to bracket":
+    "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0441\u0435\u0442\u043a\u0435",
+  "Return to bracket":
+    "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0441\u0435\u0442\u043a\u0435",
+  "Return to the tournament bracket?":
+    "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0442\u0443\u0440\u043d\u0438\u0440\u043d\u043e\u0439 \u0441\u0435\u0442\u043a\u0435?",
+  "Keep timer running":
+    "\u041e\u0441\u0442\u0430\u0432\u0438\u0442\u044c \u0442\u0430\u0439\u043c\u0435\u0440 \u0437\u0430\u043f\u0443\u0449\u0435\u043d\u043d\u044b\u043c",
+  "Stop timer and return":
+    "\u041e\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0442\u0430\u0439\u043c\u0435\u0440 \u0438 \u0432\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f",
+  "Resume match":
+    "\u0412\u0435\u0440\u043d\u0443\u0442\u044c\u0441\u044f \u043a \u0441\u0445\u0432\u0430\u0442\u043a\u0435",
+  "Save bracket":
+    "\u0421\u043e\u0445\u0440\u0430\u043d\u0438\u0442\u044c \u0441\u0435\u0442\u043a\u0443",
+  "Completed matches are locked. Unplayed matches can still be edited.":
+    "\u0417\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0435 \u0441\u0445\u0432\u0430\u0442\u043a\u0438 \u0437\u0430\u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u0430\u043d\u044b. \u041d\u0435\u0437\u0430\u0432\u0435\u0440\u0448\u0451\u043d\u043d\u044b\u0435 \u043c\u043e\u0436\u043d\u043e \u0438\u0437\u043c\u0435\u043d\u044f\u0442\u044c.",
+  "Drag to reorder":
+    "\u041f\u0435\u0440\u0435\u0442\u0430\u0449\u0438\u0442\u0435, \u0447\u0442\u043e\u0431\u044b \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u044c \u043f\u043e\u0440\u044f\u0434\u043e\u043a",
+  "Add match":
+    "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0441\u0445\u0432\u0430\u0442\u043a\u0443",
+  "TATAMI CONTROL": "УПРАВЛЕНИЕ ТАТАМИ",
+  "Choose a mode": "Выберите режим",
+  "Start one match or prepare a tournament bracket.":
+    "Начните одну схватку или подготовьте турнирную сетку.",
+  "Single match": "Одна схватка",
+  "Create and run one match.": "Создайте и проведите одну схватку.",
+  Tournament: "Турнир",
+  "Set the time, athletes and bracket.": "Задайте время, спортсменов и сетку.",
+  "← Back": "← Назад",
+  TOURNAMENT: "ТУРНИР",
+  "Tournament details": "Параметры турнира",
+  "Tournament athletes": "Спортсмены турнира",
+  "Tournament bracket": "Турнирная сетка",
+  "Tournament progress": "Ход настройки турнира",
+  "Tournament name": "Название турнира",
+  "Time per match": "Время на схватку",
+  "Olympic rules and round-robin formats are planned for a later release.":
+    "Олимпийские правила и круговая система будут добавлены в следующих версиях.",
+  Continue: "Продолжить",
+  "Add at least two athletes. Names are formatted consistently as you type.":
+    "Добавьте не менее двух спортсменов. Имена приводятся к единому формату при вводе.",
+  Athlete: "Спортсмен",
+  "Add athlete": "Добавить спортсмена",
+  "Create bracket": "Создать сетку",
+  athletes: "спортсменов",
+  "Randomize bracket": "Случайно распределить",
+  "Drag athletes into the first-round slots. Random distribution can still be adjusted manually.":
+    "Перетащите спортсменов в слоты первого раунда. Случайное распределение можно менять вручную.",
+  "Athlete pool": "Список спортсменов",
+  Athletes: "Спортсмены",
+  "Round 1": "Раунд 1",
+  "Next rounds": "Следующие раунды",
+  "Drop athlete here": "Перетащите спортсмена сюда",
+  Winner: "Победитель",
+  "Starting the tournament and recording results will be added next.":
+    "Запуск турнира и фиксация результатов будут добавлены следующим шагом.",
+  "Create next match": "Создать следующую схватку",
+  "Main screen": "На главный экран",
+  m: " мин",
+  "MM:SS": "ММ:СС",
+  "↶ Undo": "↶ Отменить",
+  "↷ Redo": "↷ Повторить",
+  "Confirm result →": "Подтвердить результат →",
+  "Ctrl+Z · Undo &nbsp; Ctrl+Shift+Z · Redo":
+    "Ctrl+Z · Отменить   Ctrl+Shift+Z · Повторить",
+  "Sound asset could not be loaded": "Не удалось загрузить звуковой файл",
+  "BJJ SCOREBOARD": "ТАБЛО ДЖИУ-ДЖИТСУ",
+  "LOCAL / OFFLINE": "ЛОКАЛЬНО / ОФЛАЙН",
+  Shortcuts: "Клавиши",
+  "Keyboard shortcuts": "Горячие клавиши",
+  "Open Scoreboard Display": "Открыть зрительское табло",
+  "Display settings": "Настройки зрительского табло",
+  Settings: "Настройки",
+  Apply: "Применить",
+  Language: "Язык",
+  Theme: "Тема",
+  Dark: "Тёмная",
+  Light: "Светлая",
+  "READY FOR THE NEXT ROUND": "ГОТОВЫ К СЛЕДУЮЩЕЙ СХВАТКЕ",
+  "Every point.": "Каждый балл.",
+  "Every second.": "Каждая секунда.",
+  "Set the match. Take control of the tatami.":
+    "Настройте схватку. Управляйте происходящим на татами.",
+  "Offline. On your side.": "Без интернета. Всегда рядом.",
+  "MATCH SETUP": "НАСТРОЙКА СХВАТКИ",
+  "Let’s step onto the mat.": "Время выйти на татами.",
+  "Competitor A · BLUE": "Спортсмен A · СИНИЙ",
+  "Competitor B · WHITE": "Спортсмен B · БЕЛЫЙ",
+  "Competitor A": "Спортсмен A",
+  "Competitor B": "Спортсмен B",
+  "Athlete name": "Имя спортсмена",
+  "Match duration": "Длительность схватки",
+  "Enter a duration from 00:01 to 999:59.": "Введите время от 00:01 до 999:59.",
+  "START MATCH": "СОЗДАТЬ СХВАТКУ",
+  "The timer starts when you’re ready.":
+    "Запустите таймер, когда будете готовы.",
+  BLUE: "СИНИЙ",
+  WHITE: "БЕЛЫЙ",
+  "BLUE · A": "СИНИЙ · A",
+  "WHITE · B": "БЕЛЫЙ · B",
+  EDIT: "ИЗМЕНИТЬ",
+  ADVANTAGES: "ПРЕИМУЩЕСТВА",
+  PENALTIES: "ШТРАФЫ",
+  "BJJ actions": "Приёмы BJJ",
+  Takedown: "Перевод в партер",
+  Sweep: "Свип",
+  "Knee on Belly": "Колено на животе",
+  "Guard Pass": "Проход гарда",
+  Mount: "Маунт",
+  "Back Control": "Контроль спины",
+  points: "Баллы",
+  Points: "Баллы",
+  advantages: "Преимущество",
+  penalties: "Штраф",
+  Undo: "Отменить",
+  Redo: "Повторить",
+  History: "История",
+  "MATCH COMPLETE": "СХВАТКА ЗАВЕРШЕНА",
+  "TIME EXPIRED": "ВРЕМЯ ИСТЕКЛО",
+  "WAITING FOR MATCH": "ОЖИДАНИЕ СХВАТКИ",
+  READY: "ГОТОВНОСТЬ",
+  RUNNING: "ИДЁТ СХВАТКА",
+  PAUSED: "ПАУЗА",
+  "Edit remaining time": "Изменить оставшееся время",
+  "FINAL RESULT": "ИТОГОВЫЙ РЕЗУЛЬТАТ",
+  "REVIEW & CONFIRM RESULT": "ПРОВЕРЬТЕ И ПОДТВЕРДИТЕ РЕЗУЛЬТАТ",
+  "MATCH CLOCK · CLICK TO ADJUST": "ТАЙМЕР · НАЖМИТЕ ДЛЯ ИЗМЕНЕНИЯ",
+  "REFEREE DECISION": "РЕШЕНИЕ СУДЬИ",
+  "Preliminary result": "Предварительный результат",
+  "Confirm result": "Подтвердить результат",
+  WINS: "ПОБЕЖДАЕТ",
+  LEADS: "ЛИДИРУЕТ",
+  "BY TIME": "ПО ВРЕМЕНИ",
+  "BY SUBMISSION": "САБМИШНОМ",
+  "BY DECISION": "ПО РЕШЕНИЮ СУДЬИ",
+  PAUSE: "ПАУЗА",
+  RESUME: "ПРОДОЛЖИТЬ",
+  "START TIMER": "ЗАПУСТИТЬ ТАЙМЕР",
+  SPACE: "ПРОБЕЛ",
+  "Reset timer": "Сбросить таймер",
+  Submission: "Сабмишн",
+  "New match": "Новая схватка",
+  "PRECISION ON THE MAT.": "ТОЧНОСТЬ НА ТАТАМИ.",
+  "TATAMI / MATCH CONTROL": "TATAMI / УПРАВЛЕНИЕ СХВАТКОЙ",
+  "Welcome back to the mat": "С возвращением на татами",
+  "A previous match was saved locally.":
+    "Предыдущая схватка сохранена на этом устройстве.",
+  "Running clocks include the time elapsed while the application was closed.":
+    "Если таймер работал, будет учтено время, прошедшее после закрытия приложения.",
+  "START NEW MATCH": "НАЧАТЬ НОВУЮ СХВАТКУ",
+  "RESTORE PREVIOUS MATCH": "ВОССТАНОВИТЬ СХВАТКУ",
+  "Match history": "История схватки",
+  "Adjust remaining time": "Изменить оставшееся время",
+  "Start a new match?": "Начать новую схватку?",
+  "Reset the match clock?": "Сбросить таймер схватки?",
+  "Submission victory": "Победа сабмишном",
+  "Confirm match result": "Подтвердить результат схватки",
+  "Scoreboard display": "Зрительское табло",
+  "Close application?": "Закрыть приложение?",
+  "Edit competitor A": "Изменить спортсмена A",
+  "Edit competitor B": "Изменить спортсмена B",
+  "Close dialog": "Закрыть диалог",
+  "Advantage +": "Преимущество +",
+  "Penalty +": "Штраф +",
+  "Space · Start / Pause / Resume": "Пробел · Старт / Пауза / Продолжить",
+  "Ctrl+Z · Undo": "Ctrl+Z · Отменить",
+  "Ctrl+Shift+Z · Redo": "Ctrl+Shift+Z · Повторить",
+  "F11 · Control window fullscreen":
+    "F11 · Полноэкранный режим окна управления",
+  "Backspace · Reset timer (with confirmation)":
+    "Backspace · Сброс таймера с подтверждением",
+  "Shortcuts are disabled while editing or when a dialog is open. Escape only dismisses dialogs.":
+    "Клавиши не действуют при вводе текста и в диалогах. Escape закрывает только диалог.",
+  "Test end-of-match sound": "Проверить звук окончания",
+  "Test start sound": "Проверить звук старта",
+  Sounds: "Звуки",
+  "Play sound when the match timer starts": "Звук при первом запуске таймера",
+  "Play sound when time expires": "Звук по окончании времени",
+  "Sound settings are saved on this device. Start sound plays on Start, not on Resume.":
+    "Настройки сохраняются на этом устройстве. Звук старта звучит при первом запуске и после сброса таймера; при продолжении после паузы — нет.",
+  "Remaining time · MM:SS": "Оставшееся время · ММ:СС",
+  "The clock keeps its current running or paused state.":
+    "Таймер сохранит текущее состояние: отсчёт или паузу.",
+  Cancel: "Отмена",
+  "Confirm change": "Подтвердить изменение",
+  Confirm: "Подтвердить",
+  "Clear athletes, scores, history and timer, and return to setup?":
+    "Очистить спортсменов, счёт, историю и таймер и вернуться к настройке?",
+  "Reset the clock to {time} and stop it? Scores remain unchanged.":
+    "Сбросить таймер на {time} и остановить его? Счёт сохранится.",
+  "A match is currently running. Close application? Your match is saved, and a running clock continues to elapse.":
+    "Схватка активна. Закрыть приложение? Данные сохранятся, а работающий таймер продолжит отсчёт.",
+  "Select the winner, then confirm the result.":
+    "Выберите победителя и подтвердите результат.",
+  "Confirm submission victory for {name}?":
+    "Подтвердить победу сабмишном: {name}?",
+  "Confirm victory for {name}?": "Подтвердить победу: {name}?",
+  "Confirm victory": "Подтвердить победу",
+  "Move the spectator window to a monitor, then enable fullscreen.":
+    "Переместите зрительское окно на нужный монитор и включите полноэкранный режим.",
+  "Toggle display fullscreen": "Полноэкранное зрительское табло",
+  "Close display": "Закрыть табло",
+  "Available monitors": "Доступные мониторы",
+  "Select a monitor": "Выберите монитор",
+  Monitor: "Монитор",
+  "Monitor selection is available in the desktop application. You can also drag the display window manually.":
+    "Выбор монитора доступен в desktop-приложении. Окно табло также можно перетащить вручную.",
+  "Toggle control fullscreen": "Полноэкранное окно управления",
+  "No events yet.": "Событий пока нет.",
+  MATCH: "СХВАТКА",
+  "Match created": "Схватка создана",
+  "Time expired": "Время истекло",
+  "Timer paused": "Таймер приостановлен",
+  "Timer started": "Таймер запущен",
+  "Timer resumed": "Отсчёт продолжен",
+  "Time adjusted (milliseconds)": "Время изменено (мс)",
+  "Timer reset": "Таймер сброшен",
+  "Victory by time": "Победа по времени",
+  "Victory by submission": "Победа сабмишном",
+  "Victory by decision": "Победа по решению судьи",
+  "Name changed to": "Имя изменено на",
+  Dismiss: "Закрыть",
+  "The saved match could not be read. Start a new match to continue.":
+    "Не удалось прочитать сохранённую схватку. Начните новую.",
+  "Local save failed. Keep this window open until storage is available.":
+    "Не удалось сохранить данные. Не закрывайте окно, пока хранилище не станет доступно.",
+  "A {field} minus": "A: {field}, уменьшить",
+  "A {field} plus": "A: {field}, увеличить",
+  "B {field} minus": "B: {field}, уменьшить",
+  "B {field} plus": "B: {field}, увеличить",
+  "A plus {n}": "A: плюс {n}",
+  "B plus {n}": "B: плюс {n}",
+  "Competitor {side} scoreboard": "Табло спортсмена {side}",
+  "FREE TOURNAMENT": "СВОБОДНЫЙ ТУРНИР",
+  "Free tournament": "Свободный турнир",
+  "Create any match from the participant list and keep a live leaderboard.":
+    "Создавайте любые пары из списка участников и ведите таблицу результатов.",
+  "Current match": "Текущая схватка",
+  Leaderboard: "Лидерборд",
+  "Drag an athlete into a match position.":
+    "Перетащите спортсмена в позицию схватки.",
+  "Drag two athletes into the coloured positions, then start the match.":
+    "Перетащите двух спортсменов в цветные позиции, затем начните схватку.",
+  "Search match history": "Поиск по истории схваток",
+  "No matches found.": "Схватки не найдены.",
+  "Select athlete": "Выберите спортсмена",
+  "Select an athlete for this match position.":
+    "Выберите спортсмена для этой позиции схватки.",
+  "Remove from match": "Убрать из схватки",
+  "Confirm tournament winner": "Подтвердить победителя турнира",
+  "Confirm {name} as the tournament winner?":
+    "Подтвердить {name} как победителя турнира?",
+  "Change winner": "Изменить победителя",
+  "Select tournament winner": "Выберите победителя турнира",
+  "End tournament": "Закончить турнир",
 };
-export function translate(text: string, locale: 'en' | 'ru', values: Record<string, string | number> = {}): string {
-  let result = locale === 'ru' ? competitionRu[text] || ru[text] || text : competitionEn[text] || text;
-  for (const [key,value] of Object.entries(values)) result = result.replaceAll(`{${key}}`, String(value));
+
+// Translation engine.
+export function translate(
+  text: string,
+  locale: Locale,
+  values: TranslationValues = {},
+): string {
+  let result =
+    locale === "ru"
+      ? competitionRu[text] || ru[text] || text
+      : competitionEn[text] || text;
+  for (const [key, value] of Object.entries(values))
+    result = result.replaceAll(`{${key}}`, String(value));
   return result;
 }
+
+// React-facing translation helper.
 export function useTranslation() {
-  const locale = useSettingsStore(s => s.settings.locale);
-  return { locale, t: (text: string, values?: Record<string, string | number>) => translate(text, locale, values) };
+  const locale = useSettingsStore((s) => s.settings.locale);
+  return {
+    locale,
+    t: (text: string, values?: TranslationValues) =>
+      translate(text, locale, values),
+  };
 }
-export function eventLabel(label: string, locale: 'en' | 'ru'): string {
-  for (const prefix of ['Undo · ', 'Redo · ', 'Name changed to ']) {
-    if (label.startsWith(prefix)) return `${translate(prefix.trim().replace(' ·',''),locale)}${prefix.includes('·') ? ' · ' : ' '}${prefix.includes('·') ? translate(label.slice(prefix.length),locale) : label.slice(prefix.length)}`;
+
+// Event-log labels have a prefix and a translated event name.
+export function eventLabel(label: string, locale: Locale): string {
+  for (const prefix of ["Undo · ", "Redo · ", "Name changed to "]) {
+    if (label.startsWith(prefix))
+      return `${translate(prefix.trim().replace(" ·", ""), locale)}${prefix.includes("·") ? " · " : " "}${prefix.includes("·") ? translate(label.slice(prefix.length), locale) : label.slice(prefix.length)}`;
   }
   return translate(label, locale);
 }

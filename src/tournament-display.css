@@ -74,16 +74,18 @@ dialog:has(.display-settings) {
   z-index: 2;
 }
 
-.settings-author { display: none; }
+.settings-author {
+  display: none;
+}
 
 .settings-author--footer {
   border-top: 1px solid var(--color-border);
   color: var(--color-text-subtle);
   display: block;
   font-size: 10px;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   margin-top: 24px;
-  opacity: .48;
+  opacity: 0.48;
   padding-top: 12px;
   text-align: center;
 }
@@ -107,7 +109,11 @@ dialog:has(.display-settings) {
   --spectator-primary: #14487b;
   --spectator-secondary: #0e284d;
   background:
-    radial-gradient(circle at 52% 42%, color-mix(in srgb, var(--spectator-primary) 44%, transparent), transparent 36%),
+    radial-gradient(
+      circle at 52% 42%,
+      color-mix(in srgb, var(--spectator-primary) 44%, transparent),
+      transparent 36%
+    ),
     linear-gradient(135deg, var(--spectator-base), var(--spectator-secondary));
   inset: 0;
   overflow: hidden;
@@ -117,7 +123,8 @@ dialog:has(.display-settings) {
 }
 
 .spectator-background--image {
-  background-image: linear-gradient(#02081233, #02081266), var(--spectator-image);
+  background-image:
+    linear-gradient(#02081233, #02081266), var(--spectator-image);
   background-position: center;
   background-size: cover;
 }
@@ -133,7 +140,10 @@ dialog:has(.display-settings) {
   position: fixed;
   width: 100vw;
 }
-.app.display > :not(.spectator-background) { position: relative; z-index: 1; }
+.app.display > :not(.spectator-background) {
+  position: relative;
+  z-index: 1;
+}
 
 .spectator-background__glow,
 .spectator-background__sweep,
@@ -173,30 +183,57 @@ dialog:has(.display-settings) {
 
 .spectator-background__sweep {
   animation: spectator-background-sweep 20s ease-in-out infinite;
-  background: linear-gradient(110deg, transparent 34%, #ffffff1a 49%, transparent 64%);
+  background: linear-gradient(
+    110deg,
+    transparent 34%,
+    #ffffff1a 49%,
+    transparent 64%
+  );
   transform: translateX(-110%);
   z-index: 3;
 }
 
 .spectator-background__vignette {
-  background: radial-gradient(ellipse at center, transparent 38%, #01050a5c 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 38%,
+    #01050a5c 100%
+  );
   z-index: 4;
 }
 
 @keyframes spectator-background-blue-glow {
-  from { transform: translate3d(-5%, -3%, 0) scale(.94); }
-  to { transform: translate3d(8%, 5%, 0) scale(1.08); }
+  from {
+    transform: translate3d(-5%, -3%, 0) scale(0.94);
+  }
+  to {
+    transform: translate3d(8%, 5%, 0) scale(1.08);
+  }
 }
 
 @keyframes spectator-background-red-glow {
-  from { transform: translate3d(5%, 4%, 0) scale(.95); }
-  to { transform: translate3d(-7%, -4%, 0) scale(1.09); }
+  from {
+    transform: translate3d(5%, 4%, 0) scale(0.95);
+  }
+  to {
+    transform: translate3d(-7%, -4%, 0) scale(1.09);
+  }
 }
 
 @keyframes spectator-background-sweep {
-  0%, 36% { transform: translateX(-110%); opacity: 0; }
-  44% { opacity: 1; }
-  62%, 100% { transform: translateX(110%); opacity: 0; }
+  0%,
+  36% {
+    transform: translateX(-110%);
+    opacity: 0;
+  }
+  44% {
+    opacity: 1;
+  }
+  62%,
+  100% {
+    transform: translateX(110%);
+    opacity: 0;
+  }
 }
 
 .tournament-display-intro__content,
@@ -218,7 +255,7 @@ dialog:has(.display-settings) {
 
 .tournament-display-intro__title {
   font-size: clamp(3rem, 10vw, 10rem);
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   line-height: 1;
   margin: 0;
   max-width: 90vw;
@@ -240,7 +277,7 @@ dialog:has(.display-settings) {
   color: var(--athlete-color);
   font-size: clamp(2rem, 5.2vw, 6.25rem);
   font-weight: 800;
-  line-height: .95;
+  line-height: 0.95;
   margin: 0;
   max-width: 100%;
   min-width: 0;
@@ -255,7 +292,7 @@ dialog:has(.display-settings) {
   color: var(--text, #fff);
   font-size: clamp(2.2rem, 5vw, 6rem);
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   justify-self: center;
 }
 
@@ -291,8 +328,8 @@ dialog:has(.display-settings) {
   text-align: center;
 }
 
-.spectator-background-option[aria-pressed='true'],
-.spectator-background-option--custom[data-selected='true'] {
+.spectator-background-option[aria-pressed="true"],
+.spectator-background-option--custom[data-selected="true"] {
   background: var(--color-surface-selected);
   border-color: var(--color-focus);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-focus) 28%, transparent);
@@ -355,14 +392,20 @@ dialog:has(.display-settings) {
   margin: 12px 0 0;
 }
 
-.spectator-background-preset select { margin: 0; min-height: 40px; padding: 8px 38px 8px 12px; }
+.spectator-background-preset select {
+  margin: 0;
+  min-height: 40px;
+  padding: 8px 38px 8px 12px;
+}
 
-.spectator-background-option--custom { cursor: pointer; }
+.spectator-background-option--custom {
+  cursor: pointer;
+}
 .spectator-background-option__upload {
   align-items: stretch;
   cursor: pointer;
   display: grid;
-  font-size: .72rem;
+  font-size: 0.72rem;
   gap: 7px;
   grid-template-rows: 64px minmax(1.75rem, auto);
   height: 100%;
@@ -371,11 +414,22 @@ dialog:has(.display-settings) {
   min-height: calc(64px + 7px + 1.75rem);
   text-decoration: underline;
 }
-.spectator-background-option__upload[data-has-image='true'] { text-decoration: none; }
-.spectator-background-option__upload .spectator-background-option__label { align-self: start; }
-.spectator-background-option__upload input { display: none; }
-.spectator-background-upload__hint { display: block; margin-top: 10px; }
-.spectator-background-upload__error { color: var(--danger, #ff9a8f); }
+.spectator-background-option__upload[data-has-image="true"] {
+  text-decoration: none;
+}
+.spectator-background-option__upload .spectator-background-option__label {
+  align-self: start;
+}
+.spectator-background-option__upload input {
+  display: none;
+}
+.spectator-background-upload__hint {
+  display: block;
+  margin-top: 10px;
+}
+.spectator-background-upload__error {
+  color: var(--danger, #ff9a8f);
+}
 
 .spectator-background--preview {
   position: absolute;
@@ -388,24 +442,45 @@ dialog:has(.display-settings) {
     padding: 28px;
   }
 
-  .spectator-background-picker__options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .spectator-background-picker__options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .spectator-background__glow,
-  .spectator-background__sweep { animation: none; }
+  .spectator-background__sweep {
+    animation: none;
+  }
 }
 
 /* The spectator backdrop must cover the entire display window. */
-.app.display { padding: 0; }
-.app.display > .match { margin: 0 32px; }
-
-@media (max-width: 1150px) {
-  .app.display > .match { margin: 0 18px; }
+.app.display {
+  padding: 0;
+}
+.app.display > .match {
+  margin: 0 32px;
 }
 
-.spectator-background--preset-cinematic .spectator-background__glow { opacity: .42; }
-.spectator-background--preset-cinematic .spectator-background__glow--red { background: radial-gradient(ellipse at 18% 62%, #9d56585c, transparent 58%); }
-.spectator-background--preset-cinematic .spectator-background__glow--blue { background: radial-gradient(ellipse at 82% 62%, #52779d5c, transparent 58%); }
-.spectator-background--preset-cinematic .spectator-background__sweep { animation-duration: 34s; opacity: .26; }
-.spectator-background--preset-cinematic .spectator-background__vignette { opacity: .72; }
+@media (max-width: 1150px) {
+  .app.display > .match {
+    margin: 0 18px;
+  }
+}
+
+.spectator-background--preset-cinematic .spectator-background__glow {
+  opacity: 0.42;
+}
+.spectator-background--preset-cinematic .spectator-background__glow--red {
+  background: radial-gradient(ellipse at 18% 62%, #9d56585c, transparent 58%);
+}
+.spectator-background--preset-cinematic .spectator-background__glow--blue {
+  background: radial-gradient(ellipse at 82% 62%, #52779d5c, transparent 58%);
+}
+.spectator-background--preset-cinematic .spectator-background__sweep {
+  animation-duration: 34s;
+  opacity: 0.26;
+}
+.spectator-background--preset-cinematic .spectator-background__vignette {
+  opacity: 0.72;
+}

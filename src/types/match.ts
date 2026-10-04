@@ -1,18 +1,56 @@
-import type { AthleteColor, Rules } from '../domain/rules';
-export type Side = 'A' | 'B';
-export type FinishReason = 'time' | 'submission' | 'decision' | 'disqualification' | 'technical' | 'draw';
-export type ScoreField = 'points' | 'advantages' | 'penalties';
-export type Competitor = { name: string; points: number; advantages: number; penalties: number; color?: AthleteColor };
-export type MatchStatus = 'setup' | 'ready' | 'running' | 'paused' | 'finished';
-export type MatchEvent = { id: string; timestamp: number; matchTime: number; competitor: Side | null; type: string; value?: number; relatedEventId?: string };
-export type ScoreAction = { id: string; side: Side; field: ScoreField; before: number; after: number; label: string; opponentPatch?: {field:ScoreField;before:number;after:number} };
+import type { AthleteColor, Rules } from "../domain/rules";
+export type Side = "A" | "B";
+export type FinishReason =
+  | "time"
+  | "submission"
+  | "decision"
+  | "disqualification"
+  | "technical"
+  | "draw";
+export type ScoreField = "points" | "advantages" | "penalties";
+export type Competitor = {
+  name: string;
+  points: number;
+  advantages: number;
+  penalties: number;
+  color?: AthleteColor;
+};
+export type MatchStatus = "setup" | "ready" | "running" | "paused" | "finished";
+export type MatchEvent = {
+  id: string;
+  timestamp: number;
+  matchTime: number;
+  competitor: Side | null;
+  type: string;
+  value?: number;
+  relatedEventId?: string;
+};
+export type ScoreAction = {
+  id: string;
+  side: Side;
+  field: ScoreField;
+  before: number;
+  after: number;
+  label: string;
+  opponentPatch?: { field: ScoreField; before: number; after: number };
+};
 export type TournamentPresentation = { name: string };
 export type MatchState = {
-  competitorA: Competitor; competitorB: Competitor;
-  rules: Rules; showWinner: boolean; overtimeAttacker: Side | null;
+  competitorA: Competitor;
+  competitorB: Competitor;
+  rules: Rules;
+  showWinner: boolean;
+  overtimeAttacker: Side | null;
   overtime: { duration: number; regulationRemaining: number } | null;
-  initialDuration: number; remainingTime: number; endTimestamp: number | null;
-  status: MatchStatus; winner: Side | null; result: FinishReason | null;
+  initialDuration: number;
+  remainingTime: number;
+  endTimestamp: number | null;
+  status: MatchStatus;
+  winner: Side | null;
+  result: FinishReason | null;
   tournamentPresentation: TournamentPresentation | null;
-  confirmed: boolean; events: MatchEvent[]; past: ScoreAction[]; future: ScoreAction[];
+  confirmed: boolean;
+  events: MatchEvent[];
+  past: ScoreAction[];
+  future: ScoreAction[];
 };

@@ -1,10 +1,17 @@
-import type { MatchState } from '../types/match';
-export function remainingTime(state: Pick<MatchState, 'status' | 'endTimestamp' | 'remainingTime'>, now = Date.now()): number {
-  return state.status === 'running' && state.endTimestamp !== null ? Math.max(0, state.endTimestamp - now) : state.remainingTime;
+import type { MatchState } from "../types/match";
+export function remainingTime(
+  state: Pick<MatchState, "status" | "endTimestamp" | "remainingTime">,
+  now = Date.now(),
+): number {
+  return state.status === "running" && state.endTimestamp !== null
+    ? Math.max(0, state.endTimestamp - now)
+    : state.remainingTime;
 }
 export function formatTime(ms: number): string {
   const seconds = Math.ceil(Math.max(0, ms) / 1000);
-  return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`;
+  return `${Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
 }
 export function parseTime(value: string): number | null {
   const match = /^(\d{2}):([0-5]\d)$/.exec(value.trim());
