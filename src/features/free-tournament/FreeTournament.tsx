@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { useTranslation } from "../../app/i18n";
-import { Modal, NameInput } from "../../shared/ui";
+import { ConfirmDialog, Modal, NameInput } from "../../shared/ui";
 import type { FreeTournamentProps } from "./FreeTournament.types";
 
 type Athlete = { id: number; name: string; duplicateIndex?: number };
@@ -483,15 +483,14 @@ export function FreeTournament({
         </Modal>
       )}
       {confirmExit && (
-        <Modal title="Leave tournament" close={() => setConfirmExit(false)}>
-          <p>{t("Leave this tournament and return to the mode selection?")}</p>
-          <div className="dialog-actions">
-            <button onClick={() => setConfirmExit(false)}>{t("Cancel")}</button>
-            <button className="primary" onClick={onExit}>
-              {t("Exit")}
-            </button>
-          </div>
-        </Modal>
+        <ConfirmDialog
+          title="Leave tournament"
+          confirmLabel="Exit"
+          onCancel={() => setConfirmExit(false)}
+          onConfirm={onExit}
+        >
+          {t("Leave this tournament and return to the mode selection?")}
+        </ConfirmDialog>
       )}
       {finishedChampionId !== null && (
         <section

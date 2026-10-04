@@ -3,8 +3,10 @@ export { SpectatorBackgroundPicker } from "./spectator-background-picker/Spectat
 export { TournamentDisplayIntro } from "./tournament-display-intro/TournamentDisplayIntro";
 export { TournamentDisplayMatchup } from "./tournament-display-matchup/TournamentDisplayMatchup";
 export { SpectatorBackgroundParticles } from "./spectator-background-particles/SpectatorBackgroundParticles";
+export { SpectatorScreen } from "./spectator-screen/SpectatorScreen";
 export type { SpectatorBackgroundProps } from "./spectator-background/SpectatorBackground.types";
 export type { SpectatorBackgroundPickerProps } from "./spectator-background-picker/SpectatorBackgroundPicker.types";
 export type { TournamentDisplayIntroProps } from "./tournament-display-intro/TournamentDisplayIntro.types";
 export type { TournamentDisplayMatchupProps } from "./tournament-display-matchup/TournamentDisplayMatchup.types";
 export type { SpectatorBackgroundParticlesProps } from "./spectator-background-particles/SpectatorBackgroundParticles.types";
+export type { SpectatorScreenProps } from "./spectator-screen/SpectatorScreen.types";

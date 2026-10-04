@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { SpectatorBackground } from "../spectator-background";
+import { SpectatorScreen } from "../spectator-screen";
 import type { TournamentDisplayMatchupProps } from "./TournamentDisplayMatchup.types";
 
 export function TournamentDisplayMatchup({
@@ -13,16 +13,14 @@ export function TournamentDisplayMatchup({
   spectatorAnimationPreset = "arena-dust",
 }: TournamentDisplayMatchupProps) {
   return (
-    <main
-      className="tournament-display-screen tournament-display-matchup"
-      aria-label="Upcoming match"
+    <SpectatorScreen
+      className="tournament-display-matchup"
+      label="Upcoming match"
+      variant={spectatorBackground}
+      image={spectatorBackgroundImage}
+      animated={spectatorBackgroundAnimated}
+      preset={spectatorAnimationPreset}
     >
-      <SpectatorBackground
-        variant={spectatorBackground}
-        image={spectatorBackgroundImage}
-        animated={spectatorBackgroundAnimated}
-        preset={spectatorAnimationPreset}
-      />
       <div className="tournament-display-matchup__content">
         <p
           className="tournament-display-matchup__name"
@@ -38,6 +36,6 @@ export function TournamentDisplayMatchup({
           {athleteB}
         </p>
       </div>
-    </main>
+    </SpectatorScreen>
   );
 }

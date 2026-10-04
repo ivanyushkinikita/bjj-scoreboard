@@ -6,7 +6,7 @@ import {
 } from "react";
 import { useTranslation } from "../../app/i18n";
 import type { TournamentMatch } from "../../types/tournament";
-import { Modal } from "../../shared/ui";
+import { ConfirmDialog } from "../../shared/ui";
 import type { TournamentBracketProps } from "./TournamentBracket.types";
 import {
   pairKey,
@@ -508,38 +508,29 @@ export function TournamentBracket({
         </section>
       )}
       {confirmExit && (
-        <Modal title="Leave tournament" close={() => setConfirmExit(false)}>
-          <p>{t("Leave this tournament and return to the mode selection?")}</p>
-          <div className="dialog-actions">
-            <button onClick={() => setConfirmExit(false)}>{t("Cancel")}</button>
-            <button className="primary" onClick={onExit}>
-              {t("Leave tournament")}
-            </button>
-          </div>
-        </Modal>
+        <ConfirmDialog
+          title="Leave tournament"
+          confirmLabel="Leave tournament"
+          onCancel={() => setConfirmExit(false)}
+          onConfirm={onExit}
+        >
+          {t("Leave this tournament and return to the mode selection?")}
+        </ConfirmDialog>
       )}
       {matchToReplay && (
-        <Modal title="Replay round?" close={() => setMatchToReplay(null)}>
-          <p>
-            {t(
-              "Do you want to replay this round? The recorded result will be replaced.",
-            )}
-          </p>
-          <div className="dialog-actions">
-            <button onClick={() => setMatchToReplay(null)}>
-              {t("Cancel")}
-            </button>
-            <button
-              className="primary"
-              onClick={() => {
-                onReplayMatch(matchToReplay);
-                setMatchToReplay(null);
-              }}
-            >
-              {t("Replay match")}
-            </button>
-          </div>
-        </Modal>
+        <ConfirmDialog
+          title="Replay round?"
+          confirmLabel="Replay match"
+          onCancel={() => setMatchToReplay(null)}
+          onConfirm={() => {
+            onReplayMatch(matchToReplay);
+            setMatchToReplay(null);
+          }}
+        >
+          {t(
+            "Do you want to replay this round? The recorded result will be replaced.",
+          )}
+        </ConfirmDialog>
       )}
       {tournamentWinner !== null && (
         <section

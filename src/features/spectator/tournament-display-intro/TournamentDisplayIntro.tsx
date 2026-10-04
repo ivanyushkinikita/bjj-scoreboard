@@ -1,4 +1,4 @@
-import { SpectatorBackground } from "../spectator-background";
+import { SpectatorScreen } from "../spectator-screen";
 import type { TournamentDisplayIntroProps } from "./TournamentDisplayIntro.types";
 
 export function TournamentDisplayIntro({
@@ -14,16 +14,14 @@ export function TournamentDisplayIntro({
   const title = presentation.name.trim();
 
   return (
-    <main
-      className="tournament-display-screen tournament-display-intro"
-      aria-label="Tournament presentation"
+    <SpectatorScreen
+      className="tournament-display-intro"
+      label="Tournament presentation"
+      variant={spectatorBackground}
+      image={spectatorBackgroundImage}
+      animated={spectatorBackgroundAnimated}
+      preset={spectatorAnimationPreset}
     >
-      <SpectatorBackground
-        variant={spectatorBackground}
-        image={spectatorBackgroundImage}
-        animated={spectatorBackgroundAnimated}
-        preset={spectatorAnimationPreset}
-      />
       {(showLogo || showTournamentTitle) && (
         <div className="tournament-display-intro__content">
           {showLogo && logo && (
@@ -38,6 +36,6 @@ export function TournamentDisplayIntro({
           )}
         </div>
       )}
-    </main>
+    </SpectatorScreen>
   );
 }
